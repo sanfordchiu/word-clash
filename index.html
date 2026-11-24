@@ -1,0 +1,3260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>國中英文單字大對決 - 極致雙人對抗版</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            redTeam: '#FF4757',
+            redDark: '#C0392B',
+            blueTeam: '#2ED573',
+            blueDark: '#10AC84',
+            accentBlue: '#1E90FF',
+            creamBg: '#FFF9F0'
+          },
+          fontFamily: {
+            fredoka: ['Fredoka', 'Nunito', 'sans-serif'],
+            noto: ['Noto Sans TC', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Virtual Key Buttons Styling - 3D Candy Bevel */
+    .key-btn {
+      transition: transform 0.06s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.06s ease, filter 0.1s ease;
+      box-shadow: 0 3.5px 0 #CBD5E1, inset 0 1px 0 rgba(255,255,255,0.9);
+      border: 1px solid #E2E8F0;
+    }
+    .key-btn:hover {
+      filter: brightness(1.03);
+    }
+    .key-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 0.5px 0 #CBD5E1, inset 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .key-btn-red-submit {
+      box-shadow: 0 3.5px 0 #991B1B, inset 0 1.5px 0 rgba(255,255,255,0.45);
+    }
+    .key-btn-red-submit:active {
+      transform: translateY(3px);
+      box-shadow: 0 0.5px 0 #991B1B;
+    }
+
+    .key-btn-blue-submit {
+      box-shadow: 0 3.5px 0 #1E40AF, inset 0 1.5px 0 rgba(255,255,255,0.45);
+    }
+    .key-btn-blue-submit:active {
+      transform: translateY(3px);
+      box-shadow: 0 0.5px 0 #1E40AF;
+    }
+
+    /* Energy Bar Shimmer Effect */
+    @keyframes shimmerSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    .energy-shimmer::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+      animation: shimmerSlide 2.2s infinite linear;
+    }
+
+    /* Match Point Fire Glow */
+    .match-point-glow {
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.85), inset 0 0 6px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Strike badge style */
+    .strike-dot {
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .strike-active {
+      transform: scale(1.25);
+      filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen max-h-screen flex flex-col justify-between relative overflow-hidden select-none p-1 sm:p-2">
+
+  <!-- Background Animated Clouds -->
+  <div id="cloud-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+  <!-- MAIN APP WRAPPER (Strict 100dvh fit) -->
+  <div id="app" class="relative z-10 h-full flex flex-col justify-between max-w-7xl mx-auto w-full gap-1.5">
+    
+    <!-- HEADER BAR -->
+    <header class="flex items-center justify-between bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-sm border border-slate-200">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-red-500 to-amber-400 flex items-center justify-center text-white text-base shadow">
+          <i class="fa-solid fa-swords"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-black text-slate-800 tracking-wide flex items-center gap-1.5">
+            單字大對決 <span class="text-[10px] font-semibold px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full border border-amber-300">國中會考雙人賽</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-2">
+        <button id="btn-sound" onclick="toggleSound()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1.5 shadow-sm text-xs font-bold">
+          <i id="icon-sound" class="fa-solid fa-music text-amber-500"></i>
+          <span id="label-sound">音樂 ON</span>
+        </button>
+        <button onclick="openMenuModal()" class="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs shadow transition flex items-center gap-1">
+          <i class="fa-solid fa-gear"></i> <span>設定</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- TOP ARENA STATUS BAR & WORD CARD -->
+    <main class="flex-1 flex flex-col justify-between gap-1.5 min-h-0">
+      
+      <!-- SCORE PROGRESS & WORD PANEL -->
+      <div class="bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-sm border border-slate-200 flex flex-col gap-1.5">
+        
+        <!-- Score Tug Line Indicator -->
+        <div class="flex items-center justify-between text-xs font-bold px-1">
+          <div class="flex items-center gap-1.5 text-red-600">
+            <span class="w-3 h-3 rounded-full bg-redTeam shadow-sm"></span>
+            <span>赤紅熊隊 (<span id="score-left-num">0</span>)</span>
+          </div>
+          <div id="game-mode-badge" class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-black border border-amber-300">
+            🌉 河畔拔河模式
+          </div>
+          <div class="flex items-center gap-1.5 text-blue-600">
+            <span>湛藍兔隊 (<span id="score-right-num">0</span>)</span>
+            <span class="w-3 h-3 rounded-full bg-blueTeam shadow-sm"></span>
+          </div>
+        </div>
+
+        <!-- Progress Bar (-Max Score to +Max Score) -->
+        <div id="energy-bar-container" class="relative w-full h-4 bg-slate-200 rounded-full overflow-hidden shadow-inner flex border border-slate-300 energy-shimmer">
+          <div id="progress-bar-left" class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-400 transition-all duration-300" style="width: 50%;"></div>
+          <div id="progress-bar-right" class="h-full bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-600 transition-all duration-300" style="width: 50%;"></div>
+          <div class="absolute left-1/2 top-0 bottom-0 w-1.5 bg-white shadow-[0_0_6px_rgba(0,0,0,0.4)] -translate-x-1/2 z-10"></div>
+        </div>
+
+        <!-- WORD QUESTION BOX -->
+        <div id="word-card" class="bg-gradient-to-b from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-2 sm:p-2.5 text-center shadow-sm relative overflow-hidden flex flex-col items-center justify-center">
+          
+          <!-- Category, Speech & 3 Strikes Display -->
+          <div class="flex items-center justify-between w-full">
+            <span id="word-category" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-800">
+              主題：全部單字
+            </span>
+
+            <!-- 3 Strike Indicators (Combined wrong count) -->
+            <div class="flex items-center gap-1 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-300">
+              <span class="text-[10px] font-bold text-amber-900 mr-1">答錯跳關:</span>
+              <span id="strike-1" class="strike-dot text-slate-300 text-xs">❌</span>
+              <span id="strike-2" class="strike-dot text-slate-300 text-xs">❌</span>
+              <span id="strike-3" class="strike-dot text-slate-300 text-xs">❌</span>
+            </div>
+
+            <!-- Teacher Controls & Pronunciation -->
+            <div class="flex items-center gap-1">
+              <button onclick="teacherHint()" class="px-2 py-0.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow transition flex items-center gap-1" title="老師提示：揭曉一個字母">
+                <i class="fa-solid fa-lightbulb"></i> 提示
+              </button>
+              <button onclick="teacherSkip()" class="px-2 py-0.5 rounded-full bg-slate-600 hover:bg-slate-700 text-white font-bold text-xs shadow transition flex items-center gap-1" title="老師跳關：直接看答案並換題">
+                <i class="fa-solid fa-forward-step"></i> 跳關
+              </button>
+              <button onclick="speakCurrentWord()" class="px-2.5 py-0.5 rounded-full bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold text-xs shadow transition flex items-center gap-1">
+                <i class="fa-solid fa-volume-high"></i> 發音
+              </button>
+            </div>
+          </div>
+
+          <!-- Chinese Meaning & Part of Speech -->
+          <div class="flex items-center justify-center gap-2 my-0.5">
+            <span id="word-pos" class="px-1.5 py-0.5 rounded text-[11px] font-black bg-slate-800 text-white">n.</span>
+            <h2 id="word-zh" class="text-xl sm:text-2xl font-black text-slate-800 tracking-wide">
+              蘋果
+            </h2>
+          </div>
+
+          <!-- Partial Word Hint -->
+          <div id="word-hint" class="text-lg sm:text-xl font-black tracking-widest text-amber-700 font-fredoka">
+            a _ _ l e
+          </div>
+
+          <!-- Toast Message for 3-Strike Skip or Teacher Skip -->
+          <div id="skip-toast" class="hidden text-xs font-bold text-red-600 bg-red-100 px-3 py-1 rounded-full border border-red-300 animate-bounce mt-1">
+            ❌ 雙方合計答錯 3 次，跳過此題！
+          </div>
+        </div>
+      </div>
+
+      <!-- CANVAS ANIMATION PLAYFIELD -->
+      <div class="relative w-full flex-1 min-h-[140px] sm:min-h-[170px] bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <canvas id="gameCanvas" class="w-full h-full block"></canvas>
+      </div>
+
+      <!-- DUAL PLAYER INPUT PANELS (SPLIT LEFT & RIGHT) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+        
+        <!-- RED TEAM (LEFT PLAYER) -->
+        <div id="panel-left" class="bg-white/90 backdrop-blur-md rounded-2xl p-2 border-2 border-red-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+          
+          <!-- Stun Overlay -->
+          <div id="stun-left" class="hidden absolute inset-0 bg-red-950/75 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-white font-black animate-pulse">
+            <div class="text-2xl mb-1"><i class="fa-solid fa-dizzy text-yellow-300 animate-spin"></i></div>
+            <p class="text-sm text-yellow-300">拼錯冷卻中 (1.5s)</p>
+          </div>
+
+          <!-- Team Header -->
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl">🐻</span>
+              <span class="font-black text-red-600 text-xs sm:text-sm">赤紅熊隊</span>
+            </div>
+            <span id="combo-left" class="hidden px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold border border-red-300">
+              🔥 Combo x2
+            </span>
+          </div>
+
+          <!-- Answer Slots Display -->
+          <div class="mb-1.5">
+            <div id="input-display-left" class="flex items-center justify-center gap-1 min-h-[36px] bg-red-50/80 border-2 border-red-300 rounded-xl p-1 text-base sm:text-lg font-bold font-fredoka text-red-700 tracking-wider">
+              <!-- Letters rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Virtual Keypad Grid for Left Player -->
+          <div id="keypad-left" class="grid grid-cols-7 gap-1">
+            <!-- Dynamically populated letters A-Z + Clear + Submit -->
+          </div>
+        </div>
+
+        <!-- BLUE TEAM (RIGHT PLAYER) -->
+        <div id="panel-right" class="bg-white/90 backdrop-blur-md rounded-2xl p-2 border-2 border-blue-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+          
+          <!-- Stun Overlay -->
+          <div id="stun-right" class="hidden absolute inset-0 bg-blue-950/75 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-white font-black animate-pulse">
+            <div class="text-2xl mb-1"><i class="fa-solid fa-dizzy text-yellow-300 animate-spin"></i></div>
+            <p class="text-sm text-yellow-300">拼錯冷卻中 (1.5s)</p>
+          </div>
+
+          <!-- Team Header -->
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl">🐰</span>
+              <span class="font-black text-blue-600 text-xs sm:text-sm">湛藍兔隊</span>
+            </div>
+            <span id="combo-right" class="hidden px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold border border-blue-300">
+              🔥 Combo x2
+            </span>
+          </div>
+
+          <!-- Answer Slots Display -->
+          <div class="mb-1.5">
+            <div id="input-display-right" class="flex items-center justify-center gap-1 min-h-[36px] bg-blue-50/80 border-2 border-blue-300 rounded-xl p-1 text-base sm:text-lg font-bold font-fredoka text-blue-700 tracking-wider">
+              <!-- Letters rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Virtual Keypad Grid for Right Player -->
+          <div id="keypad-right" class="grid grid-cols-7 gap-1">
+            <!-- Dynamically populated letters A-Z + Clear + Submit -->
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODAL 1: SETTINGS -->
+  <div id="modal-settings" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl p-5 max-w-lg w-full shadow-2xl border border-slate-100 bounce-in my-auto">
+      
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2.5">
+        <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-amber-500"></i> 翰林版題庫與遊戲設定
+        </h3>
+        <button onclick="closeMenuModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <!-- Mode Select -->
+        <div>
+          <label class="block font-bold text-slate-500 mb-1">對抗動畫主題</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="selectGameMode('tug')" id="mode-btn-tug" class="mode-select-btn p-2 rounded-2xl border-2 border-amber-400 bg-amber-50 text-amber-900 font-bold flex flex-col items-center gap-0.5 transition">
+              <span class="text-xl">🌊</span>
+              <span>河畔拔河</span>
+            </button>
+            <button type="button" onclick="selectGameMode('boulder')" id="mode-btn-boulder" class="mode-select-btn p-2 rounded-2xl border-2 border-slate-200 bg-slate-50 text-slate-700 font-bold flex flex-col items-center gap-0.5 transition">
+              <span class="text-xl">🪨</span>
+              <span>巨石推推</span>
+            </button>
+            <button type="button" onclick="selectGameMode('cake')" id="mode-btn-cake" class="mode-select-btn p-2 rounded-2xl border-2 border-slate-200 bg-slate-50 text-slate-700 font-bold flex flex-col items-center gap-0.5 transition">
+              <span class="text-xl">🍰</span>
+              <span>蛋糕大砲</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hanlin Edition Volume & Unit Multi-Select -->
+        <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="font-black text-amber-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-book text-amber-600"></i> 115 佳音翰林版冊別與單元勾選
+            </label>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="toggleAllHanlinUnits(true)" class="px-2 py-0.5 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded font-bold text-[10px]">全選</button>
+              <button type="button" onclick="toggleAllHanlinUnits(false)" class="px-2 py-0.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-bold text-[10px]">全不選</button>
+            </div>
+          </div>
+
+          <!-- Volume Tabs -->
+          <div id="hanlin-vol-tabs" class="grid grid-cols-6 gap-1 mb-2">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Active Volume Header with Select-Whole-Volume Checkbox -->
+          <div class="flex items-center justify-between bg-white px-2.5 py-1.5 rounded-xl border border-amber-200 mb-1.5">
+            <label class="flex items-center gap-1.5 font-black text-slate-800 cursor-pointer">
+              <input type="checkbox" id="chk-current-vol" onchange="toggleCurrentVolume(this.checked)" class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+              <span id="current-vol-title">第 1 冊 (1-1 ~ 1-6) 全冊勾選</span>
+            </label>
+            <span id="selected-summary-badge" class="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
+              已選 6 單元
+            </span>
+          </div>
+
+          <!-- Unit Checkboxes Grid -->
+          <div id="hanlin-unit-list" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto pr-0.5 mb-2">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Word Classification Filter (依檔案內「字彙分類」篩選) -->
+          <div class="flex flex-wrap items-center justify-between gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-amber-200">
+            <span class="font-bold text-slate-600 text-[11px]">字彙分類：</span>
+            <div class="flex items-center gap-2 text-[11px] font-bold text-slate-700">
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" id="chk-cat-applied" checked onchange="toggleWordCat('應用字彙', this.checked)" class="accent-amber-500 rounded">
+                <span>應用字彙</span>
+              </label>
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" id="chk-cat-poly" checked onchange="toggleWordCat('一字多義', this.checked)" class="accent-amber-500 rounded">
+                <span>一字多義</span>
+              </label>
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" id="chk-cat-recog" onchange="toggleWordCat('認識字彙', this.checked)" class="accent-amber-500 rounded">
+                <span>認識字彙</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Difficulty & Win Score -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-500 mb-1">題目提示難度</label>
+            <select id="select-difficulty" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <option value="normal">普通 (顯示字首)</option>
+              <option value="easy">簡單 (顯示首尾字)</option>
+              <option value="hard">困難 (全底線遮蔽)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-500 mb-1">獲勝目標積分</label>
+            <select id="select-maxscore" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <option value="3">3 分 (快速快答)</option>
+              <option value="5" selected>5 分 (標準競賽)</option>
+              <option value="7">7 分 (拉鋸對抗)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Custom Vocab Button -->
+        <button onclick="openCustomVocabModal()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-2 border border-slate-300">
+          <i class="fa-solid fa-pen-to-square"></i> 額外補充 / 匯入自訂單字
+        </button>
+
+      </div>
+
+      <div class="mt-3">
+        <button onclick="applySettingsAndStart()" class="w-full py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 font-black text-sm rounded-2xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i> 套用勾選範圍並開始遊戲
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: HOW TO PLAY / RULES -->
+  <div id="modal-rules" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-md w-full shadow-2xl border border-slate-100 bounce-in">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+        <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-book-open text-amber-500"></i> 遊戲玩法與勝負規則
+        </h3>
+        <button onclick="closeRulesModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="space-y-2 text-xs text-slate-600 leading-relaxed">
+        <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200">
+          <p class="font-bold text-amber-900 mb-1">⚡ 搶答推進機制：</p>
+          <p>左右兩隊看到畫面中央的「中文解釋與詞性」後，迅速利用下方點擊或觸控鍵盤輸入英文單字，最先拼對並按下 <span class="px-1.5 py-0.5 bg-emerald-500 text-white rounded font-bold">送出</span> 者即得分，並將陣營往對方推進 1 分！</p>
+        </div>
+        <div class="p-2.5 bg-red-50 rounded-xl border border-red-200">
+          <p class="font-bold text-red-900 mb-1">😵 拼錯處罰與連擊：</p>
+          <p>若單字拼錯按下送出，該隊將陷入 <span class="font-bold text-red-600">1.5 秒暈眩狀態</span> 無法操作。連續答對可觸發 <span class="font-bold text-orange-600">Combo 1.5 倍推進威力</span>！</p>
+        </div>
+        <div class="p-2.5 bg-blue-50 rounded-xl border border-blue-200">
+          <p class="font-bold text-blue-900 mb-1">🏆 終局大決戰動畫：</p>
+          <p>當一方累積推進達到目標分數時，將觸發終極動畫：落水淹沒、巨石壓扁或奶油蛋糕重擊爆炸！</p>
+        </div>
+      </div>
+      <button onclick="closeRulesModal()" class="w-full mt-4 py-2 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs rounded-xl shadow">
+        我知道了，開始對戰！
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CUSTOM VOCAB EDITOR -->
+  <div id="modal-custom" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-md w-full shadow-2xl border border-slate-100 bounce-in">
+      <div class="flex items-center justify-between mb-2 border-b border-slate-100 pb-2">
+        <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-file-pen text-amber-500"></i> 輸入自訂英文單字庫
+        </h3>
+        <button onclick="closeCustomVocabModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-[11px] text-slate-500 mb-2">
+        格式說明：每行一詞，格式為 <code class="bg-slate-100 px-1 rounded text-red-500">英文,詞性,中文</code>（如 <code class="bg-slate-100 px-1 rounded">apple,n.,蘋果</code>）
+      </p>
+
+      <textarea id="custom-vocab-input" rows="7" class="w-full font-mono text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="apple,n.,蘋果&#10;banana,n.,香蕉&#10;rabbit,n.,兔子"></textarea>
+
+      <div class="flex gap-2 mt-3">
+        <button onclick="saveCustomVocab()" class="flex-1 py-2 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs rounded-xl transition shadow">
+          套用自訂題庫
+        </button>
+        <button onclick="closeCustomVocabModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: GAME OVER WINNER CINEMATIC -->
+  <div id="modal-gameover" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-center bounce-in relative overflow-hidden border-4 border-amber-300">
+      
+      <div class="w-16 h-16 mx-auto mb-2 bg-gradient-to-tr from-amber-400 to-yellow-200 rounded-full flex items-center justify-center text-amber-800 text-3xl shadow-md animate-bounce">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+
+      <h2 id="winner-title" class="text-2xl font-black text-slate-800 mb-1">
+        赤紅柴犬隊 榮獲勝利！
+      </h2>
+      <p id="winner-subtitle" class="text-xs font-bold text-slate-500 mb-5 leading-relaxed">
+        成功將對手擊退落入河中！
+      </p>
+
+      <div class="space-y-2">
+        <button onclick="restartGame()" class="w-full py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black text-base rounded-2xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rotate-right"></i> 再戰一局 (Play Again)
+        </button>
+        <button onclick="openMenuModalFromEnd()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition">
+          返回設定 (Menu)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT GAME ENGINE -->
+  <script>
+    /* ==========================================================================
+       1. 115 佳音翰林版單字表 B1-B6 完整分冊分單元題庫 (依上傳 PDF 編排)
+       ========================================================================== */
+    const HANLIN_CURRICULUM = [
+      {
+        id: "B1",
+        name: "第1冊",
+        grade: "七上",
+        units: [
+          {
+            id: "1-1",
+            title: "1-1 單元",
+            words: [
+              { word: "handsome", pos: "adj.", zh: "英俊的", cat: "應用字彙" },
+              { word: "new", pos: "adj.", zh: "新的", cat: "應用字彙" },
+              { word: "classmate", pos: "n.", zh: "同學", cat: "應用字彙" },
+              { word: "young", pos: "adj.", zh: "年輕的", cat: "應用字彙" },
+              { word: "woman", pos: "n.", zh: "女人(複數為women)", cat: "應用字彙" },
+              { word: "very", pos: "adv.", zh: "非常", cat: "應用字彙" },
+              { word: "beautiful", pos: "adj.", zh: "美麗的", cat: "應用字彙" },
+              { word: "too", pos: "adv.", zh: "也", cat: "應用字彙" },
+              { word: "cousin", pos: "n.", zh: "堂表兄弟姐妹", cat: "應用字彙" },
+              { word: "really", pos: "adv.", zh: "真地", cat: "應用字彙" },
+              { word: "singer", pos: "n.", zh: "歌手", cat: "應用字彙" },
+              { word: "office worker", pos: "n.", zh: "上班族", cat: "應用字彙" },
+              { word: "housewife", pos: "n.", zh: "家庭主婦", cat: "應用字彙" },
+              { word: "police officer", pos: "n.", zh: "警察", cat: "應用字彙" },
+              { word: "writer", pos: "n.", zh: "作家", cat: "應用字彙" },
+              { word: "uncle", pos: "n.", zh: "叔伯；舅舅", cat: "應用字彙" },
+              { word: "aunt", pos: "n.", zh: "阿姨；姑姑", cat: "應用字彙" },
+              { word: "wife", pos: "n.", zh: "妻子", cat: "應用字彙" },
+              { word: "daughter", pos: "n.", zh: "女兒", cat: "應用字彙" },
+              { word: "husband", pos: "n.", zh: "丈夫", cat: "應用字彙" },
+              { word: "son", pos: "n.", zh: "兒子", cat: "應用字彙" },
+              { word: "dear", pos: "adj.", zh: "親愛的", cat: "應用字彙" },
+              { word: "family", pos: "n.", zh: "家庭；家人", cat: "應用字彙" },
+              { word: "elementary school", pos: "n.", zh: "國小", cat: "應用字彙" },
+              { word: "junior high school", pos: "n.", zh: "國中", cat: "應用字彙" },
+              { word: "baby", pos: "n./adj.", zh: "嬰兒；年幼的", cat: "應用字彙" }
+            ]
+          },
+          {
+            id: "1-2",
+            title: "1-2 單元",
+            words: [
+              { word: "house", pos: "n.", zh: "房子", cat: "應用字彙" },
+              { word: "parents", pos: "n.", zh: "父母親", cat: "應用字彙" },
+              { word: "living room", pos: "n.", zh: "客廳", cat: "應用字彙" },
+              { word: "wall", pos: "n.", zh: "牆壁", cat: "應用字彙" },
+              { word: "purple", pos: "adj./n.", zh: "紫色(的)", cat: "應用字彙" },
+              { word: "favorite", pos: "adj./n.", zh: "最喜愛(的)", cat: "應用字彙" },
+              { word: "color", pos: "n.", zh: "顏色", cat: "應用字彙" },
+              { word: "kitchen", pos: "n.", zh: "廚房", cat: "應用字彙" },
+              { word: "dining room", pos: "n.", zh: "飯廳", cat: "應用字彙" },
+              { word: "but", pos: "conj.", zh: "但是", cat: "應用字彙" },
+              { word: "gray", pos: "adj./n.", zh: "灰色(的)", cat: "應用字彙" },
+              { word: "brown", pos: "adj./n.", zh: "棕色(的)", cat: "應用字彙" },
+              { word: "cookie", pos: "n.", zh: "餅乾", cat: "應用字彙" },
+              { word: "mice", pos: "n.", zh: "老鼠(mouse的複數)", cat: "應用字彙" },
+              { word: "maybe", pos: "adv.", zh: "可能", cat: "應用字彙" },
+              { word: "sofa", pos: "n.", zh: "沙發", cat: "應用字彙" },
+              { word: "hungry", pos: "adj.", zh: "餓的", cat: "應用字彙" },
+              { word: "notebook", pos: "n.", zh: "筆記本", cat: "應用字彙" },
+              { word: "marker", pos: "n.", zh: "記號筆；彩色筆", cat: "應用字彙" },
+              { word: "brush", pos: "n.", zh: "毛筆；筆刷", cat: "應用字彙" },
+              { word: "gift", pos: "n.", zh: "禮物", cat: "應用字彙" },
+              { word: "pencil case", pos: "n.", zh: "鉛筆盒", cat: "應用字彙" },
+              { word: "bathroom", pos: "n.", zh: "浴室；廁所", cat: "應用字彙" },
+              { word: "table", pos: "n.", zh: "桌子", cat: "應用字彙" },
+              { word: "bedroom", pos: "n.", zh: "臥室", cat: "應用字彙" },
+              { word: "near", pos: "prep.", zh: "在…附近", cat: "應用字彙" },
+              { word: "between", pos: "prep.", zh: "在…之間", cat: "應用字彙" },
+              { word: "behind", pos: "prep.", zh: "在…後面", cat: "應用字彙" },
+              { word: "in front of", pos: "prep.", zh: "在…前面", cat: "應用字彙" },
+              { word: "special", pos: "adj.", zh: "特別的", cat: "應用字彙" },
+              { word: "inside", pos: "prep.", zh: "在…裡面", cat: "應用字彙" },
+              { word: "each other", pos: "pron.", zh: "彼此；互相", cat: "應用字彙" },
+              { word: "above", pos: "prep./adv.", zh: "在…上方", cat: "應用字彙" },
+              { word: "enough", pos: "adj./adv.", zh: "足夠(的)", cat: "應用字彙" },
+              { word: "person", pos: "n.", zh: "人", cat: "應用字彙" }
+            ]
+          },
+          {
+            id: "1-3",
+            title: "1-3 單元",
+            words: [
+              { word: "guy", pos: "n.", zh: "人；傢伙", cat: "應用字彙" },
+              { word: "magic", pos: "adj./n.", zh: "神奇的；魔法", cat: "應用字彙" },
+              { word: "place", pos: "n.", zh: "地方", cat: "應用字彙" },
+              { word: "use", pos: "v./n.", zh: "使用", cat: "應用字彙" },
+              { word: "sure", pos: "adv./adj.", zh: "當然；確定的", cat: "應用字彙" },
+              { word: "careful", pos: "adj.", zh: "小心的", cat: "應用字彙" },
+              { word: "museum", pos: "n.", zh: "博物館", cat: "應用字彙" },
+              { word: "hurry", pos: "v.", zh: "快點", cat: "應用字彙" },
+              { word: "please", pos: "int.", zh: "請；拜託", cat: "應用字彙" },
+              { word: "wait", pos: "v.", zh: "等待", cat: "應用字彙" },
+              { word: "man", pos: "n.", zh: "男人(複數為men)", cat: "應用字彙" },
+              { word: "now", pos: "adv.", zh: "現在", cat: "應用字彙" },
+              { word: "time", pos: "n.", zh: "次；時間", cat: "應用字彙" },
+              { word: "wake up", pos: "phr.", zh: "醒來；叫醒…", cat: "應用字彙" },
+              { word: "class", pos: "n.", zh: "課；班級", cat: "應用字彙" },
+              { word: "see", pos: "v.", zh: "看見", cat: "一字多義" },
+              { word: "quiet", pos: "adj.", zh: "安靜的", cat: "應用字彙" },
+              { word: "turn off", pos: "phr.", zh: "關掉", cat: "應用字彙" },
+              { word: "sign", pos: "n.", zh: "標誌", cat: "應用字彙" },
+              { word: "talk", pos: "v.", zh: "說話", cat: "應用字彙" },
+              { word: "fight", pos: "v./n.", zh: "吵架；打架", cat: "應用字彙" },
+              { word: "turn", pos: "n.", zh: "(依次輪到的)機會", cat: "一字多義" },
+              { word: "follow", pos: "v.", zh: "遵守；跟隨", cat: "應用字彙" },
+              { word: "rule", pos: "n.", zh: "規則", cat: "應用字彙" },
+              { word: "safe", pos: "adj.", zh: "安全的", cat: "應用字彙" },
+              { word: "wash", pos: "v.", zh: "清洗", cat: "應用字彙" },
+              { word: "hand", pos: "n.", zh: "手", cat: "應用字彙" },
+              { word: "after class", pos: "phr.", zh: "下課後", cat: "應用字彙" },
+              { word: "mummy", pos: "n.", zh: "木乃伊", cat: "認識字彙" },
+              { word: "rock", pos: "n.", zh: "石塊", cat: "認識字彙" },
+              { word: "dinosaur", pos: "n.", zh: "恐龍", cat: "認識字彙" },
+              { word: "lab", pos: "n.", zh: "實驗室", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "1-4",
+            title: "1-4 單元",
+            words: [
+              { word: "music video", pos: "n.", zh: "音樂影片", cat: "應用字彙" },
+              { word: "band", pos: "n.", zh: "樂團", cat: "應用字彙" },
+              { word: "cute", pos: "adj.", zh: "可愛的", cat: "應用字彙" },
+              { word: "great", pos: "adj.", zh: "棒的", cat: "應用字彙" },
+              { word: "free", pos: "adj.", zh: "有空的", cat: "應用字彙" },
+              { word: "weekend", pos: "n.", zh: "週末", cat: "應用字彙" },
+              { word: "Saturday", pos: "n.", zh: "星期六", cat: "應用字彙" },
+              { word: "together", pos: "adv.", zh: "一起", cat: "應用字彙" },
+              { word: "ready", pos: "adj.", zh: "準備好的", cat: "應用字彙" },
+              { word: "today", pos: "adv./n.", zh: "今天", cat: "應用字彙" },
+              { word: "Friday", pos: "n.", zh: "星期五", cat: "應用字彙" },
+              { word: "Sunday", pos: "n.", zh: "星期日", cat: "應用字彙" },
+              { word: "Monday", pos: "n.", zh: "星期一", cat: "應用字彙" },
+              { word: "Tuesday", pos: "n.", zh: "星期二", cat: "應用字彙" },
+              { word: "Wednesday", pos: "n.", zh: "星期三", cat: "應用字彙" },
+              { word: "Thursday", pos: "n.", zh: "星期四", cat: "應用字彙" },
+              { word: "week", pos: "n.", zh: "週；星期", cat: "應用字彙" },
+              { word: "study", pos: "v.", zh: "研讀", cat: "應用字彙" },
+              { word: "English", pos: "n.", zh: "英文", cat: "應用字彙" },
+              { word: "movie", pos: "n.", zh: "電影", cat: "應用字彙" },
+              { word: "party", pos: "n.", zh: "派對；宴會", cat: "應用字彙" },
+              { word: "report", pos: "v./n.", zh: "報導", cat: "應用字彙" },
+              { word: "popular", pos: "adj.", zh: "受歡迎的", cat: "應用字彙" },
+              { word: "everyone", pos: "pron.", zh: "每個人", cat: "應用字彙" },
+              { word: "sign", pos: "v.", zh: "簽名", cat: "一字多義" },
+              { word: "concert", pos: "n.", zh: "音樂會；演唱會", cat: "認識字彙" },
+              { word: "stage", pos: "n.", zh: "舞台", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "1-5",
+            title: "1-5 單元",
+            words: [
+              { word: "date", pos: "n.", zh: "日期", cat: "應用字彙" },
+              { word: "November", pos: "n.", zh: "十一月", cat: "應用字彙" },
+              { word: "first", pos: "adj./adv.", zh: "第一(的)", cat: "應用字彙" },
+              { word: "second", pos: "adv./n.", zh: "第二(的)", cat: "應用字彙" },
+              { word: "Thanksgiving", pos: "n.", zh: "感恩節", cat: "應用字彙" },
+              { word: "important", pos: "adj.", zh: "重要的", cat: "應用字彙" },
+              { word: "holiday", pos: "n.", zh: "節日；假日", cat: "應用字彙" },
+              { word: "when", pos: "adv.", zh: "何時", cat: "應用字彙" },
+              { word: "fourth", pos: "adv./n.", zh: "第四(的)", cat: "應用字彙" },
+              { word: "birthday", pos: "n.", zh: "生日", cat: "應用字彙" },
+              { word: "also", pos: "adv.", zh: "也；此外", cat: "應用字彙" },
+              { word: "before", pos: "prep.", zh: "在…之前", cat: "應用字彙" },
+              { word: "around", pos: "adv./prep.", zh: "圍繞；在…附近", cat: "應用字彙" },
+              { word: "next", pos: "adj.", zh: "下一個的", cat: "一字多義" },
+              { word: "month", pos: "n.", zh: "月份", cat: "應用字彙" },
+              { word: "January", pos: "n.", zh: "一月", cat: "應用字彙" },
+              { word: "February", pos: "n.", zh: "二月", cat: "應用字彙" },
+              { word: "March", pos: "n.", zh: "三月", cat: "應用字彙" },
+              { word: "April", pos: "n.", zh: "四月", cat: "應用字彙" },
+              { word: "May", pos: "n.", zh: "五月", cat: "應用字彙" },
+              { word: "June", pos: "n.", zh: "六月", cat: "應用字彙" },
+              { word: "July", pos: "n.", zh: "七月", cat: "應用字彙" },
+              { word: "August", pos: "n.", zh: "八月", cat: "應用字彙" },
+              { word: "September", pos: "n.", zh: "九月", cat: "應用字彙" },
+              { word: "October", pos: "n.", zh: "十月", cat: "應用字彙" },
+              { word: "December", pos: "n.", zh: "十二月", cat: "應用字彙" },
+              { word: "Christmas", pos: "n.", zh: "聖誕節", cat: "應用字彙" },
+              { word: "third", pos: "n.", zh: "第三(的)", cat: "應用字彙" },
+              { word: "animal", pos: "n.", zh: "動物", cat: "應用字彙" },
+              { word: "cow", pos: "n.", zh: "牛；乳牛", cat: "應用字彙" },
+              { word: "think", pos: "v.", zh: "想，認為", cat: "應用字彙" },
+              { word: "lucky", pos: "adj.", zh: "幸運的", cat: "應用字彙" },
+              { word: "only", pos: "adv./adj.", zh: "只是；唯一的", cat: "應用字彙" },
+              { word: "dinner", pos: "n.", zh: "晚餐", cat: "應用字彙" },
+              { word: "thankful", pos: "adj.", zh: "感謝的", cat: "認識字彙" },
+              { word: "turkey leg", pos: "n.", zh: "火雞腿", cat: "認識字彙" },
+              { word: "nervous", pos: "adj.", zh: "緊張的", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "1-6",
+            title: "1-6 單元",
+            words: [
+              { word: "lion", pos: "n.", zh: "獅子", cat: "應用字彙" },
+              { word: "king", pos: "n.", zh: "國王", cat: "應用字彙" },
+              { word: "elephant", pos: "n.", zh: "大象", cat: "應用字彙" },
+              { word: "tiger", pos: "n.", zh: "老虎", cat: "應用字彙" },
+              { word: "zebra", pos: "n.", zh: "斑馬", cat: "應用字彙" },
+              { word: "back", pos: "n.", zh: "背；後面", cat: "應用字彙" },
+              { word: "help", pos: "n./v.", zh: "幫助；幫忙", cat: "應用字彙" },
+              { word: "right", pos: "adj.", zh: "正確的", cat: "一字多義" },
+              { word: "monkey", pos: "n.", zh: "猴子", cat: "應用字彙" },
+              { word: "fox", pos: "n.", zh: "狐狸", cat: "應用字彙" },
+              { word: "horse", pos: "n.", zh: "馬", cat: "應用字彙" },
+              { word: "rat", pos: "n.", zh: "老鼠", cat: "應用字彙" },
+              { word: "bear", pos: "n.", zh: "熊", cat: "應用字彙" },
+              { word: "world", pos: "n.", zh: "世界", cat: "應用字彙" },
+              { word: "example", pos: "n.", zh: "實例", cat: "應用字彙" },
+              { word: "bug", pos: "n.", zh: "蟲子", cat: "應用字彙" },
+              { word: "food", pos: "n.", zh: "食物", cat: "應用字彙" },
+              { word: "clean up", pos: "phr.", zh: "清理；打掃", cat: "應用字彙" },
+              { word: "full", pos: "adj.", zh: "飽的；滿的", cat: "應用字彙" },
+              { word: "healthy", pos: "adj.", zh: "健康的", cat: "應用字彙" },
+              { word: "clean", pos: "adj.", zh: "乾淨的", cat: "一字多義" },
+              { word: "never", pos: "adv.", zh: "從不", cat: "認識字彙" },
+              { word: "herd", pos: "n.", zh: "獸群", cat: "認識字彙" },
+              { word: "expert", pos: "n.", zh: "專家", cat: "認識字彙" },
+              { word: "luckily", pos: "adv.", zh: "幸運地", cat: "認識字彙" },
+              { word: "provide", pos: "v.", zh: "提供", cat: "認識字彙" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "B2",
+        name: "第2冊",
+        grade: "七下",
+        units: [
+          {
+            id: "2-1",
+            title: "2-1 單元",
+            words: [
+              { word: "sport", pos: "n.", zh: "運動", cat: "應用字彙" },
+              { word: "team", pos: "n.", zh: "隊；組", cat: "應用字彙" },
+              { word: "practice", pos: "v./n.", zh: "練習", cat: "應用字彙" },
+              { word: "every", pos: "adj.", zh: "每一", cat: "應用字彙" },
+              { word: "swim", pos: "v.", zh: "游泳", cat: "應用字彙" },
+              { word: "join", pos: "v.", zh: "參加", cat: "應用字彙" },
+              { word: "hundred", pos: "n.", zh: "百", cat: "應用字彙" },
+              { word: "centimeter", pos: "n.", zh: "公分(=cm)", cat: "應用字彙" },
+              { word: "guitar", pos: "n.", zh: "吉他", cat: "應用字彙" },
+              { word: "piano", pos: "n.", zh: "鋼琴", cat: "應用字彙" },
+              { word: "paint", pos: "v./n.", zh: "畫圖；顏料", cat: "應用字彙" },
+              { word: "large", pos: "adj.", zh: "大的", cat: "應用字彙" },
+              { word: "mouth", pos: "n.", zh: "嘴巴", cat: "應用字彙" },
+              { word: "thick", pos: "adj.", zh: "厚的", cat: "應用字彙" },
+              { word: "strong", pos: "adj.", zh: "強壯的", cat: "應用字彙" },
+              { word: "height", pos: "n.", zh: "身高；高度", cat: "應用字彙" },
+              { word: "player", pos: "n.", zh: "選手；球員", cat: "應用字彙" },
+              { word: "body", pos: "n.", zh: "身體", cat: "應用字彙" },
+              { word: "different", pos: "adj.", zh: "不同的", cat: "應用字彙" },
+              { word: "perfect", pos: "adj.", zh: "完美的", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "2-2",
+            title: "2-2 單元",
+            words: [
+              { word: "question", pos: "n.", zh: "問題", cat: "應用字彙" },
+              { word: "early", pos: "adj./adv.", zh: "早的", cat: "應用字彙" },
+              { word: "often", pos: "adv.", zh: "經常", cat: "應用字彙" },
+              { word: "get up", pos: "phr.", zh: "起床", cat: "應用字彙" },
+              { word: "usually", pos: "adv.", zh: "通常", cat: "應用字彙" },
+              { word: "seldom", pos: "adv.", zh: "很少", cat: "應用字彙" },
+              { word: "sometimes", pos: "adv.", zh: "有時候", cat: "應用字彙" },
+              { word: "hour", pos: "n.", zh: "小時", cat: "應用字彙" },
+              { word: "always", pos: "adv.", zh: "總是", cat: "應用字彙" },
+              { word: "tired", pos: "adj.", zh: "疲累的", cat: "應用字彙" },
+              { word: "shower", pos: "n./v.", zh: "淋浴", cat: "應用字彙" },
+              { word: "library", pos: "n.", zh: "圖書館", cat: "應用字彙" },
+              { word: "once", pos: "adv.", zh: "一次", cat: "應用字彙" },
+              { word: "twice", pos: "adv.", zh: "兩次", cat: "應用字彙" },
+              { word: "breakfast", pos: "n.", zh: "早餐", cat: "應用字彙" },
+              { word: "lunch", pos: "n.", zh: "午餐", cat: "應用字彙" },
+              { word: "exercise", pos: "v./n.", zh: "運動", cat: "應用字彙" },
+              { word: "computer", pos: "n.", zh: "電腦", cat: "應用字彙" },
+              { word: "minute", pos: "n.", zh: "分鐘", cat: "應用字彙" },
+              { word: "answer", pos: "n./v.", zh: "回答；答案", cat: "應用字彙" },
+              { word: "trouble", pos: "n.", zh: "困難；麻煩", cat: "應用字彙" },
+              { word: "owl", pos: "n.", zh: "貓頭鷹", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "2-3",
+            title: "2-3 單元",
+            words: [
+              { word: "painting", pos: "n.", zh: "畫作", cat: "應用字彙" },
+              { word: "flower", pos: "n.", zh: "花", cat: "應用字彙" },
+              { word: "which", pos: "pron./adj.", zh: "哪一個", cat: "應用字彙" },
+              { word: "thirsty", pos: "adj.", zh: "口渴的", cat: "應用字彙" },
+              { word: "coffee", pos: "n.", zh: "咖啡", cat: "應用字彙" },
+              { word: "later", pos: "adv.", zh: "稍後；晚點", cat: "應用字彙" },
+              { word: "clerk", pos: "n.", zh: "店員", cat: "應用字彙" },
+              { word: "juice", pos: "n.", zh: "果汁", cat: "應用字彙" },
+              { word: "anything", pos: "pron.", zh: "任何事物", cat: "應用字彙" },
+              { word: "treat", pos: "n./v.", zh: "請客；款待", cat: "應用字彙" },
+              { word: "sweet", pos: "adj.", zh: "甜美的；甜的", cat: "應用字彙" },
+              { word: "chocolate", pos: "n.", zh: "巧克力", cat: "應用字彙" },
+              { word: "dollar", pos: "n.", zh: "元", cat: "應用字彙" },
+              { word: "bright", pos: "adj.", zh: "鮮豔的；明亮的", cat: "應用字彙" },
+              { word: "hamburger", pos: "n.", zh: "漢堡", cat: "應用字彙" },
+              { word: "ice cream", pos: "n.", zh: "冰淇淋", cat: "應用字彙" },
+              { word: "sandwich", pos: "n.", zh: "三明治", cat: "應用字彙" },
+              { word: "street", pos: "n.", zh: "街道", cat: "應用字彙" },
+              { word: "create", pos: "v.", zh: "創造", cat: "認識字彙" },
+              { word: "balance", pos: "n.", zh: "平衡", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "2-4",
+            title: "2-4 單元",
+            words: [
+              { word: "wear", pos: "v.", zh: "戴；穿", cat: "應用字彙" },
+              { word: "mask", pos: "n.", zh: "口罩；面具", cat: "應用字彙" },
+              { word: "because", pos: "conj.", zh: "因為", cat: "應用字彙" },
+              { word: "sick", pos: "adj.", zh: "生病的", cat: "應用字彙" },
+              { word: "glass", pos: "n.", zh: "玻璃杯；玻璃", cat: "應用字彙" },
+              { word: "flour", pos: "n.", zh: "麵粉", cat: "應用字彙" },
+              { word: "still", pos: "adv.", zh: "仍然", cat: "應用字彙" },
+              { word: "salt", pos: "n.", zh: "鹽", cat: "應用字彙" },
+              { word: "something", pos: "pron.", zh: "某物；某事", cat: "應用字彙" },
+              { word: "sugar", pos: "n.", zh: "糖", cat: "應用字彙" },
+              { word: "meal", pos: "n.", zh: "餐", cat: "應用字彙" },
+              { word: "bottle", pos: "n.", zh: "瓶子", cat: "應用字彙" },
+              { word: "candy", pos: "n.", zh: "糖果", cat: "應用字彙" },
+              { word: "popcorn", pos: "n.", zh: "爆米花", cat: "應用字彙" },
+              { word: "pizza", pos: "n.", zh: "披薩", cat: "應用字彙" },
+              { word: "toast", pos: "n./v.", zh: "烤吐司；烘烤", cat: "應用字彙" },
+              { word: "bread", pos: "n.", zh: "麵包", cat: "應用字彙" },
+              { word: "yummy", pos: "adj.", zh: "好吃的", cat: "應用字彙" },
+              { word: "snack", pos: "n.", zh: "點心", cat: "應用字彙" },
+              { word: "cheese", pos: "n.", zh: "乳酪", cat: "應用字彙" },
+              { word: "plate", pos: "n.", zh: "盤子", cat: "應用字彙" },
+              { word: "enjoy", pos: "v.", zh: "享受；喜愛", cat: "應用字彙" },
+              { word: "slice", pos: "n.", zh: "片", cat: "認識字彙" },
+              { word: "mix", pos: "v.", zh: "混合；拌和", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "2-5",
+            title: "2-5 單元",
+            words: [
+              { word: "yesterday", pos: "adv./n.", zh: "昨天", cat: "應用字彙" },
+              { word: "beach", pos: "n.", zh: "海灘", cat: "應用字彙" },
+              { word: "trash", pos: "n.", zh: "垃圾", cat: "應用字彙" },
+              { word: "visit", pos: "v./n.", zh: "拜訪", cat: "應用字彙" },
+              { word: "island", pos: "n.", zh: "島嶼", cat: "應用字彙" },
+              { word: "stop", pos: "v.", zh: "停止", cat: "應用字彙" },
+              { word: "happen", pos: "v.", zh: "發生", cat: "應用字彙" },
+              { word: "dead", pos: "adj.", zh: "死亡的", cat: "應用字彙" },
+              { word: "warm", pos: "adj.", zh: "溫暖的", cat: "應用字彙" },
+              { word: "rainforest", pos: "n.", zh: "雨林", cat: "應用字彙" },
+              { word: "busy", pos: "adj.", zh: "忙碌的", cat: "應用字彙" },
+              { word: "river", pos: "n.", zh: "河流", cat: "應用字彙" },
+              { word: "lake", pos: "n.", zh: "湖泊", cat: "應用字彙" },
+              { word: "mountain", pos: "n.", zh: "山", cat: "應用字彙" },
+              { word: "climb", pos: "v.", zh: "爬(山)", cat: "應用字彙" },
+              { word: "plant", pos: "v./n.", zh: "種植；植物", cat: "應用字彙" },
+              { word: "hike", pos: "v./n.", zh: "健行", cat: "應用字彙" },
+              { word: "picnic", pos: "v./n.", zh: "野餐", cat: "應用字彙" },
+              { word: "playground", pos: "n.", zh: "遊樂場；操場", cat: "應用字彙" },
+              { word: "change", pos: "v./n.", zh: "改變", cat: "應用字彙" },
+              { word: "burn", pos: "v.", zh: "燃燒", cat: "應用字彙" },
+              { word: "company", pos: "n.", zh: "公司", cat: "認識字彙" },
+              { word: "village", pos: "n.", zh: "村莊", cat: "認識字彙" },
+              { word: "adult", pos: "n.", zh: "成人", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "2-6",
+            title: "2-6 單元",
+            words: [
+              { word: "airport", pos: "n.", zh: "機場", cat: "應用字彙" },
+              { word: "travel", pos: "v./n.", zh: "旅行；行進", cat: "應用字彙" },
+              { word: "rest", pos: "n./v.", zh: "休息", cat: "應用字彙" },
+              { word: "hotel", pos: "n.", zh: "飯店", cat: "應用字彙" },
+              { word: "plane", pos: "n.", zh: "飛機", cat: "應用字彙" },
+              { word: "bookstore", pos: "n.", zh: "書店", cat: "應用字彙" },
+              { word: "learn", pos: "v.", zh: "學習", cat: "應用字彙" },
+              { word: "story", pos: "n.", zh: "故事", cat: "應用字彙" },
+              { word: "train", pos: "n.", zh: "火車", cat: "應用字彙" },
+              { word: "station", pos: "n.", zh: "車站；局", cat: "應用字彙" },
+              { word: "restaurant", pos: "n.", zh: "餐廳", cat: "應用字彙" },
+              { word: "theater", pos: "n.", zh: "電影院", cat: "應用字彙" },
+              { word: "market", pos: "n.", zh: "市場", cat: "應用字彙" },
+              { word: "temple", pos: "n.", zh: "寺廟", cat: "應用字彙" },
+              { word: "famous", pos: "adj.", zh: "有名的", cat: "應用字彙" },
+              { word: "during", pos: "prep.", zh: "在…期間", cat: "應用字彙" },
+              { word: "besides", pos: "adv./prep.", zh: "除…之外", cat: "應用字彙" },
+              { word: "build", pos: "v.", zh: "建造", cat: "應用字彙" },
+              { word: "trip", pos: "n.", zh: "旅行；行程", cat: "一字多義" },
+              { word: "building", pos: "n.", zh: "建築物", cat: "認識字彙" },
+              { word: "forever", pos: "adv.", zh: "永遠", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "2-CF",
+            title: "2-CF 文化節慶",
+            words: [
+              { word: "Easter", pos: "n.", zh: "復活節", cat: "應用字彙" },
+              { word: "moon", pos: "n.", zh: "月亮", cat: "應用字彙" },
+              { word: "church", pos: "n.", zh: "教堂", cat: "應用字彙" },
+              { word: "roll", pos: "v.", zh: "滾動", cat: "應用字彙" },
+              { word: "hunt", pos: "v./n.", zh: "搜尋；狩獵", cat: "應用字彙" },
+              { word: "check", pos: "v.", zh: "查看", cat: "一字多義" },
+              { word: "activity", pos: "n.", zh: "活動", cat: "認識字彙" },
+              { word: "unique", pos: "adj.", zh: "獨特的", cat: "認識字彙" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "B3",
+        name: "第3冊",
+        grade: "八上",
+        units: [
+          {
+            id: "3-1",
+            title: "3-1 單元",
+            words: [
+              { word: "summer vacation", pos: "n.", zh: "暑假", cat: "應用字彙" },
+              { word: "weather", pos: "n.", zh: "天氣", cat: "應用字彙" },
+              { word: "Taiwan", pos: "n.", zh: "臺灣", cat: "應用字彙" },
+              { word: "snow", pos: "v./n.", zh: "下雪；雪", cat: "應用字彙" },
+              { word: "postcard", pos: "n.", zh: "明信片", cat: "應用字彙" },
+              { word: "borrow", pos: "v.", zh: "借(入)", cat: "應用字彙" },
+              { word: "lend", pos: "v.", zh: "借(出)", cat: "應用字彙" },
+              { word: "glove", pos: "n.", zh: "手套", cat: "應用字彙" },
+              { word: "lovely", pos: "adj.", zh: "可愛的；美好的", cat: "應用字彙" },
+              { word: "jacket", pos: "n.", zh: "夾克", cat: "應用字彙" },
+              { word: "heavy", pos: "adj.", zh: "厚重的；大量的", cat: "應用字彙" },
+              { word: "season", pos: "n.", zh: "季節", cat: "應用字彙" },
+              { word: "spring", pos: "n.", zh: "春天", cat: "應用字彙" },
+              { word: "autumn", pos: "n.", zh: "秋天(= fall)", cat: "應用字彙" },
+              { word: "winter", pos: "n.", zh: "冬天", cat: "應用字彙" },
+              { word: "sunny", pos: "adj.", zh: "陽光普照的", cat: "應用字彙" },
+              { word: "rainy", pos: "adj.", zh: "有雨的；下雨的", cat: "應用字彙" },
+              { word: "cloudy", pos: "adj.", zh: "多雲的", cat: "應用字彙" },
+              { word: "windy", pos: "adj.", zh: "風大的", cat: "應用字彙" },
+              { word: "strange", pos: "adj.", zh: "奇怪的；陌生的", cat: "應用字彙" },
+              { word: "anyway", pos: "adv.", zh: "無論如何", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "3-2",
+            title: "3-2 單元",
+            words: [
+              { word: "club", pos: "n.", zh: "社團", cat: "應用字彙" },
+              { word: "interesting", pos: "adj.", zh: "有趣的", cat: "應用字彙" },
+              { word: "science", pos: "n.", zh: "科學", cat: "應用字彙" },
+              { word: "subject", pos: "n.", zh: "學科；主題", cat: "應用字彙" },
+              { word: "camera", pos: "n.", zh: "相機", cat: "應用字彙" },
+              { word: "mine", pos: "pron.", zh: "我的(東西)", cat: "應用字彙" },
+              { word: "wrong", pos: "adj.", zh: "錯誤的", cat: "應用字彙" },
+              { word: "math", pos: "n.", zh: "數學", cat: "應用字彙" },
+              { word: "soccer", pos: "n.", zh: "足球", cat: "應用字彙" },
+              { word: "history", pos: "n.", zh: "歷史", cat: "應用字彙" },
+              { word: "violin", pos: "n.", zh: "小提琴", cat: "應用字彙" },
+              { word: "robot", pos: "n.", zh: "機器人", cat: "應用字彙" },
+              { word: "health", pos: "n.", zh: "健康", cat: "應用字彙" },
+              { word: "engineer", pos: "n.", zh: "工程師", cat: "應用字彙" },
+              { word: "difficult", pos: "adj.", zh: "困難的", cat: "應用字彙" },
+              { word: "festival", pos: "n.", zh: "節慶", cat: "應用字彙" },
+              { word: "choice", pos: "n.", zh: "選擇", cat: "應用字彙" },
+              { word: "design", pos: "n./v.", zh: "設計", cat: "認識字彙" },
+              { word: "winner", pos: "n.", zh: "獲勝者", cat: "認識字彙" },
+              { word: "contest", pos: "n.", zh: "競賽", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "3-3",
+            title: "3-3 單元",
+            words: [
+              { word: "someone", pos: "pron.", zh: "某人(=somebody)", cat: "應用字彙" },
+              { word: "break", pos: "v.", zh: "打破；損壞", cat: "應用字彙" },
+              { word: "quarter", pos: "n.", zh: "十五分鐘；四分之一", cat: "應用字彙" },
+              { word: "remember", pos: "v.", zh: "記得", cat: "應用字彙" },
+              { word: "sweep", pos: "v.", zh: "掃", cat: "應用字彙" },
+              { word: "floor", pos: "n.", zh: "地板；樓層", cat: "應用字彙" },
+              { word: "drawer", pos: "n.", zh: "抽屜", cat: "應用字彙" },
+              { word: "stairs", pos: "n.", zh: "樓梯", cat: "應用字彙" },
+              { word: "window", pos: "n.", zh: "窗戶", cat: "應用字彙" },
+              { word: "clothes", pos: "n.", zh: "衣服", cat: "應用字彙" },
+              { word: "dream", pos: "n./v.", zh: "夢；夢想", cat: "應用字彙" },
+              { word: "almost", pos: "adv.", zh: "幾乎", cat: "應用字彙" },
+              { word: "scared", pos: "adj.", zh: "害怕的", cat: "應用字彙" },
+              { word: "problem", pos: "n.", zh: "問題", cat: "應用字彙" },
+              { word: "however", pos: "adv.", zh: "然而", cat: "應用字彙" },
+              { word: "nothing", pos: "pron.", zh: "沒什麼；無事", cat: "應用字彙" },
+              { word: "through", pos: "prep.", zh: "穿越；從頭到尾", cat: "應用字彙" },
+              { word: "finally", pos: "adv.", zh: "終於；最後", cat: "應用字彙" },
+              { word: "terrible", pos: "adj.", zh: "可怕的；糟糕的", cat: "應用字彙" },
+              { word: "monitor", pos: "n.", zh: "監視器", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "3-4",
+            title: "3-4 單元",
+            words: [
+              { word: "future", pos: "n./adj.", zh: "未來(的)", cat: "應用字彙" },
+              { word: "lawyer", pos: "n.", zh: "律師", cat: "應用字彙" },
+              { word: "reporter", pos: "n.", zh: "記者", cat: "應用字彙" },
+              { word: "interview", pos: "v./n.", zh: "採訪；面試", cat: "應用字彙" },
+              { word: "mail carrier", pos: "n.", zh: "郵差", cat: "應用字彙" },
+              { word: "dentist", pos: "n.", zh: "牙醫", cat: "應用字彙" },
+              { word: "factory", pos: "n.", zh: "工廠", cat: "應用字彙" },
+              { word: "fisherman", pos: "n.", zh: "漁夫", cat: "應用字彙" },
+              { word: "secretary", pos: "n.", zh: "祕書", cat: "應用字彙" },
+              { word: "salesman", pos: "n.", zh: "銷售員；業務員", cat: "應用字彙" },
+              { word: "farmer", pos: "n.", zh: "農夫", cat: "應用字彙" },
+              { word: "soldier", pos: "n.", zh: "士兵", cat: "應用字彙" },
+              { word: "country", pos: "n.", zh: "國家", cat: "應用字彙" },
+              { word: "successful", pos: "adj.", zh: "成功的", cat: "應用字彙" },
+              { word: "decide", pos: "v.", zh: "決定", cat: "應用字彙" },
+              { word: "become", pos: "v.", zh: "成為", cat: "應用字彙" },
+              { word: "relative", pos: "n.", zh: "親戚", cat: "應用字彙" },
+              { word: "believe", pos: "v.", zh: "相信", cat: "應用字彙" },
+              { word: "career", pos: "n.", zh: "職業", cat: "認識字彙" },
+              { word: "deliver", pos: "v.", zh: "投遞；運送", cat: "認識字彙" },
+              { word: "success", pos: "n.", zh: "成功", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "3-5",
+            title: "3-5 單元",
+            words: [
+              { word: "metro", pos: "n.", zh: "捷運", cat: "應用字彙" },
+              { word: "straight", pos: "adv./adj.", zh: "直地；直的", cat: "應用字彙" },
+              { word: "along", pos: "prep.", zh: "沿著", cat: "應用字彙" },
+              { word: "block", pos: "n.", zh: "街區", cat: "應用字彙" },
+              { word: "corner", pos: "n.", zh: "轉角；角落", cat: "應用字彙" },
+              { word: "supermarket", pos: "n.", zh: "超市", cat: "應用字彙" },
+              { word: "ground", pos: "n.", zh: "地面", cat: "應用字彙" },
+              { word: "taxi", pos: "n.", zh: "計程車", cat: "應用字彙" },
+              { word: "motorcycle", pos: "n.", zh: "機車；摩托車", cat: "應用字彙" },
+              { word: "scooter", pos: "n.", zh: "機車", cat: "應用字彙" },
+              { word: "bank", pos: "n.", zh: "銀行；河岸", cat: "應用字彙" },
+              { word: "fire station", pos: "n.", zh: "消防局", cat: "應用字彙" },
+              { word: "post office", pos: "n.", zh: "郵局", cat: "應用字彙" },
+              { word: "hospital", pos: "n.", zh: "醫院", cat: "應用字彙" },
+              { word: "sound", pos: "v./n.", zh: "聲音", cat: "應用字彙" },
+              { word: "experience", pos: "n./v.", zh: "經歷；經驗", cat: "應用字彙" },
+              { word: "wonderful", pos: "adj.", zh: "美好的", cat: "應用字彙" }
+            ]
+          },
+          {
+            id: "3-6",
+            title: "3-6 單元",
+            words: [
+              { word: "sweater", pos: "n.", zh: "毛衣", cat: "應用字彙" },
+              { word: "tonight", pos: "adv./n.", zh: "今晚", cat: "應用字彙" },
+              { word: "price", pos: "n.", zh: "價格", cat: "應用字彙" },
+              { word: "spend", pos: "v.", zh: "花費(時間、金錢)", cat: "應用字彙" },
+              { word: "expensive", pos: "adj.", zh: "昂貴的", cat: "應用字彙" },
+              { word: "total", pos: "n./adj.", zh: "總計(的)", cat: "應用字彙" },
+              { word: "thousand", pos: "n.", zh: "千", cat: "應用字彙" },
+              { word: "tomorrow", pos: "adv./n.", zh: "明天", cat: "應用字彙" },
+              { word: "dress", pos: "v./n.", zh: "打扮；洋裝", cat: "應用字彙" },
+              { word: "shirt", pos: "n.", zh: "襯衫", cat: "應用字彙" },
+              { word: "jeans", pos: "n.", zh: "牛仔褲", cat: "應用字彙" },
+              { word: "pants", pos: "n.", zh: "長褲", cat: "應用字彙" },
+              { word: "shorts", pos: "n.", zh: "短褲", cat: "應用字彙" },
+              { word: "skirt", pos: "n.", zh: "裙子", cat: "應用字彙" },
+              { word: "glasses", pos: "n.", zh: "眼鏡", cat: "應用字彙" },
+              { word: "cheap", pos: "adj.", zh: "便宜的", cat: "應用字彙" },
+              { word: "checkout", pos: "n.", zh: "結帳處", cat: "認識字彙" },
+              { word: "fashion", pos: "n.", zh: "時尚", cat: "認識字彙" },
+              { word: "environment", pos: "n.", zh: "環境", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "3-CF",
+            title: "3-CF 文化節慶",
+            words: [
+              { word: "Halloween", pos: "n.", zh: "萬聖節", cat: "應用字彙" },
+              { word: "children", pos: "n.", zh: "兒童(單數為child)", cat: "應用字彙" },
+              { word: "pumpkin", pos: "n.", zh: "南瓜", cat: "應用字彙" },
+              { word: "moment", pos: "n.", zh: "時刻", cat: "應用字彙" },
+              { word: "costume", pos: "n.", zh: "道具服", cat: "認識字彙" },
+              { word: "scary", pos: "adj.", zh: "嚇人的", cat: "認識字彙" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "B4",
+        name: "第4冊",
+        grade: "八下",
+        units: [
+          {
+            id: "4-1",
+            title: "4-1 單元",
+            words: [
+              { word: "foreign", pos: "adj.", zh: "外國的", cat: "應用字彙" },
+              { word: "friendly", pos: "adj.", zh: "友善的", cat: "應用字彙" },
+              { word: "convenient", pos: "adj.", zh: "便利的", cat: "應用字彙" },
+              { word: "pork", pos: "n.", zh: "豬肉", cat: "應用字彙" },
+              { word: "beef", pos: "n.", zh: "牛肉", cat: "應用字彙" },
+              { word: "delicious", pos: "adj.", zh: "美味的", cat: "應用字彙" },
+              { word: "steak", pos: "n.", zh: "牛排；肉排", cat: "應用字彙" },
+              { word: "menu", pos: "n.", zh: "菜單", cat: "應用字彙" },
+              { word: "waitress", pos: "n.", zh: "女服務生", cat: "應用字彙" },
+              { word: "butter", pos: "n.", zh: "奶油", cat: "應用字彙" },
+              { word: "medium", pos: "adj.", zh: "五分熟；中等的", cat: "應用字彙" },
+              { word: "smell", pos: "v./n.", zh: "聞起來；氣味", cat: "應用字彙" },
+              { word: "taste", pos: "v./n.", zh: "嚐起來；味道", cat: "應用字彙" },
+              { word: "knife", pos: "n.", zh: "刀", cat: "應用字彙" },
+              { word: "fork", pos: "n.", zh: "叉子", cat: "應用字彙" },
+              { word: "noodle", pos: "n.", zh: "麵", cat: "應用字彙" },
+              { word: "chopsticks", pos: "n.", zh: "筷子", cat: "應用字彙" },
+              { word: "spoon", pos: "n.", zh: "湯匙", cat: "應用字彙" },
+              { word: "waiter", pos: "n.", zh: "男服務生", cat: "應用字彙" },
+              { word: "strawberry", pos: "n.", zh: "草莓", cat: "應用字彙" },
+              { word: "earth", pos: "n.", zh: "地球", cat: "應用字彙" },
+              { word: "comfortable", pos: "adj.", zh: "舒適的；自在的", cat: "應用字彙" },
+              { word: "view", pos: "n.", zh: "景色", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "4-2",
+            title: "4-2 單元",
+            words: [
+              { word: "grass", pos: "n.", zh: "草地", cat: "應用字彙" },
+              { word: "dangerous", pos: "adj.", zh: "危險的", cat: "應用字彙" },
+              { word: "bite", pos: "v./n.", zh: "咬；咬(傷)", cat: "應用字彙" },
+              { word: "death", pos: "n.", zh: "死亡", cat: "應用字彙" },
+              { word: "agree", pos: "v.", zh: "同意", cat: "應用字彙" },
+              { word: "circle", pos: "n./v.", zh: "圓圈；畫圈", cat: "應用字彙" },
+              { word: "myself", pos: "pron.", zh: "我自己", cat: "應用字彙" },
+              { word: "snake", pos: "n.", zh: "蛇", cat: "應用字彙" },
+              { word: "spider", pos: "n.", zh: "蜘蛛", cat: "應用字彙" },
+              { word: "insect", pos: "n.", zh: "昆蟲", cat: "應用字彙" },
+              { word: "kilogram", pos: "n.", zh: "公斤", cat: "應用字彙" },
+              { word: "nature", pos: "n.", zh: "大自然", cat: "應用字彙" },
+              { word: "below", pos: "prep./adv.", zh: "在…之下；在下面", cat: "應用字彙" },
+              { word: "smart", pos: "adj.", zh: "聰明的", cat: "應用字彙" },
+              { word: "traffic", pos: "n.", zh: "交通；車流量", cat: "應用字彙" },
+              { word: "appear", pos: "v.", zh: "似乎", cat: "應用字彙" },
+              { word: "cause", pos: "v.", zh: "造成", cat: "認識字彙" },
+              { word: "protect", pos: "v.", zh: "保護", cat: "認識字彙" },
+              { word: "safety", pos: "n.", zh: "安全", cat: "認識字彙" },
+              { word: "accident", pos: "n.", zh: "意外", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "4-3",
+            title: "4-3 單元",
+            words: [
+              { word: "loudly", pos: "adv.", zh: "大聲地", cat: "應用字彙" },
+              { word: "share", pos: "v.", zh: "分享", cat: "應用字彙" },
+              { word: "weak", pos: "adj.", zh: "虛弱的", cat: "應用字彙" },
+              { word: "dirty", pos: "adj.", zh: "髒的", cat: "應用字彙" },
+              { word: "without", pos: "prep.", zh: "沒有；無", cat: "應用字彙" },
+              { word: "quickly", pos: "adv.", zh: "快地", cat: "應用字彙" },
+              { word: "service", pos: "n.", zh: "服務", cat: "應用字彙" },
+              { word: "wise", pos: "adj.", zh: "明智的", cat: "應用字彙" },
+              { word: "celebrate", pos: "v.", zh: "慶祝", cat: "應用字彙" },
+              { word: "grape", pos: "n.", zh: "葡萄", cat: "應用字彙" },
+              { word: "goose", pos: "n.", zh: "鵝(複數為geese)", cat: "應用字彙" },
+              { word: "sheep", pos: "n.", zh: "綿羊", cat: "應用字彙" },
+              { word: "peach", pos: "n.", zh: "桃子", cat: "應用字彙" },
+              { word: "turtle", pos: "n.", zh: "烏龜", cat: "應用字彙" },
+              { word: "papaya", pos: "n.", zh: "木瓜", cat: "應用字彙" },
+              { word: "vegetable", pos: "n.", zh: "蔬菜", cat: "應用字彙" },
+              { word: "guava", pos: "n.", zh: "芭樂", cat: "應用字彙" },
+              { word: "tomato", pos: "n.", zh: "番茄", cat: "應用字彙" },
+              { word: "watermelon", pos: "n.", zh: "西瓜", cat: "應用字彙" },
+              { word: "million", pos: "n.", zh: "百萬", cat: "應用字彙" },
+              { word: "chance", pos: "n.", zh: "機會", cat: "應用字彙" },
+              { word: "choose", pos: "v.", zh: "選擇", cat: "應用字彙" },
+              { word: "information", pos: "n.", zh: "資訊", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "4-4",
+            title: "4-4 單元",
+            words: [
+              { word: "typhoon", pos: "n.", zh: "颱風", cat: "應用字彙" },
+              { word: "balcony", pos: "n.", zh: "陽台", cat: "應用字彙" },
+              { word: "prepare", pos: "v.", zh: "準備", cat: "應用字彙" },
+              { word: "should", pos: "aux.", zh: "應該", cat: "應用字彙" },
+              { word: "candle", pos: "n.", zh: "蠟燭", cat: "應用字彙" },
+              { word: "radio", pos: "n.", zh: "收音機；廣播", cat: "應用字彙" },
+              { word: "news", pos: "n.", zh: "新聞；消息", cat: "應用字彙" },
+              { word: "shine", pos: "v.", zh: "閃耀；照耀", cat: "應用字彙" },
+              { word: "giant", pos: "adj.", zh: "巨大的", cat: "應用字彙" },
+              { word: "rainbow", pos: "n.", zh: "彩虹", cat: "應用字彙" },
+              { word: "garden", pos: "n.", zh: "花園", cat: "應用字彙" },
+              { word: "frog", pos: "n.", zh: "青蛙", cat: "應用字彙" },
+              { word: "noise", pos: "n.", zh: "聲響；噪音", cat: "應用字彙" },
+              { word: "noisy", pos: "adj.", zh: "嘈雜的", cat: "應用字彙" },
+              { word: "earthquake", pos: "n.", zh: "地震", cat: "應用字彙" },
+              { word: "bravely", pos: "adv.", zh: "勇敢地", cat: "應用字彙" },
+              { word: "reach", pos: "v.", zh: "到達", cat: "應用字彙" },
+              { word: "space", pos: "n.", zh: "空間", cat: "應用字彙" },
+              { word: "flashlight", pos: "n.", zh: "手電筒", cat: "認識字彙" },
+              { word: "suddenly", pos: "adv.", zh: "突然", cat: "認識字彙" },
+              { word: "rescue", pos: "n./v.", zh: "救援", cat: "認識字彙" },
+              { word: "survivor", pos: "n.", zh: "生還者", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "4-5",
+            title: "4-5 單元",
+            words: [
+              { word: "although", pos: "conj.", zh: "雖然(=though)", cat: "應用字彙" },
+              { word: "matter", pos: "n.", zh: "問題；事件", cat: "應用字彙" },
+              { word: "sore throat", pos: "n.", zh: "喉嚨痛", cat: "應用字彙" },
+              { word: "explain", pos: "v.", zh: "解釋", cat: "應用字彙" },
+              { word: "cough", pos: "v./n.", zh: "咳嗽", cat: "應用字彙" },
+              { word: "probably", pos: "adv.", zh: "很可能；大概", cat: "應用字彙" },
+              { word: "medicine", pos: "n.", zh: "藥", cat: "應用字彙" },
+              { word: "honey", pos: "n.", zh: "蜂蜜", cat: "應用字彙" },
+              { word: "lemon", pos: "n.", zh: "檸檬", cat: "應用字彙" },
+              { word: "useful", pos: "adj.", zh: "有用的", cat: "應用字彙" },
+              { word: "headache", pos: "n.", zh: "頭痛", cat: "應用字彙" },
+              { word: "stomachache", pos: "n.", zh: "胃痛", cat: "應用字彙" },
+              { word: "fever", pos: "n.", zh: "發燒", cat: "應用字彙" },
+              { word: "shoulder", pos: "n.", zh: "肩膀", cat: "應用字彙" },
+              { word: "bakery", pos: "n.", zh: "麵包店", cat: "應用字彙" },
+              { word: "common", pos: "adj.", zh: "常見的；共同的", cat: "應用字彙" },
+              { word: "actually", pos: "adv.", zh: "實際上；事實上", cat: "應用字彙" },
+              { word: "helpful", pos: "adj.", zh: "有幫助的", cat: "應用字彙" },
+              { word: "reason", pos: "n.", zh: "原因；理由", cat: "應用字彙" },
+              { word: "recipe", pos: "n.", zh: "食譜", cat: "認識字彙" },
+              { word: "memory", pos: "n.", zh: "記憶；記憶力", cat: "認識字彙" },
+              { word: "brain", pos: "n.", zh: "頭腦", cat: "認識字彙" },
+              { word: "focus", pos: "v./n.", zh: "專注；焦點", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "4-6",
+            title: "4-6 單元",
+            words: [
+              { word: "pass", pos: "v.", zh: "傳遞；通過", cat: "應用字彙" },
+              { word: "throw", pos: "v.", zh: "丟；投擲", cat: "應用字彙" },
+              { word: "point", pos: "n.", zh: "得分", cat: "應用字彙" },
+              { word: "member", pos: "n.", zh: "成員", cat: "應用字彙" },
+              { word: "group", pos: "n.", zh: "團體", cat: "應用字彙" },
+              { word: "afraid", pos: "adj.", zh: "害怕的；擔憂的", cat: "應用字彙" },
+              { word: "forget", pos: "v.", zh: "忘記", cat: "應用字彙" },
+              { word: "begin", pos: "v.", zh: "開始", cat: "應用字彙" },
+              { word: "meeting", pos: "n.", zh: "會議；會面", cat: "應用字彙" },
+              { word: "excuse", pos: "n.", zh: "藉口；理由", cat: "一字多義" },
+              { word: "grade", pos: "n.", zh: "成績", cat: "一字多義" },
+              { word: "simple", pos: "adj.", zh: "簡單的", cat: "應用字彙" },
+              { word: "expect", pos: "v.", zh: "預計；期望", cat: "應用字彙" },
+              { word: "mistake", pos: "n.", zh: "錯誤", cat: "應用字彙" },
+              { word: "allow", pos: "v.", zh: "允許", cat: "應用字彙" },
+              { word: "honest", pos: "adj.", zh: "誠實的；可信的", cat: "應用字彙" },
+              { word: "excellent", pos: "adj.", zh: "優秀的；極佳的", cat: "應用字彙" },
+              { word: "define", pos: "v.", zh: "下定義；界定", cat: "應用字彙" },
+              { word: "gender", pos: "n.", zh: "性別", cat: "認識字彙" },
+              { word: "talent", pos: "n.", zh: "人才；天分", cat: "認識字彙" },
+              { word: "designer", pos: "n.", zh: "設計師", cat: "認識字彙" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "B5",
+        name: "第5冊",
+        grade: "九上",
+        units: [
+          {
+            id: "5-1",
+            title: "5-1 單元",
+            words: [
+              { word: "already", pos: "adv.", zh: "已經", cat: "應用字彙" },
+              { word: "diet", pos: "n.", zh: "節食；飲食", cat: "應用字彙" },
+              { word: "raise", pos: "v.", zh: "提高；舉起", cat: "應用字彙" },
+              { word: "since", pos: "conj./prep.", zh: "自從", cat: "應用字彙" },
+              { word: "crazy", pos: "adj.", zh: "荒唐的；瘋狂的", cat: "應用字彙" },
+              { word: "slim", pos: "adj.", zh: "苗條的；微小的", cat: "應用字彙" },
+              { word: "habit", pos: "n.", zh: "習慣", cat: "應用字彙" },
+              { word: "gym", pos: "n.", zh: "健身房；體育館", cat: "應用字彙" },
+              { word: "abroad", pos: "adv.", zh: "到國外", cat: "應用字彙" },
+              { word: "cheat", pos: "v.", zh: "作弊；欺騙", cat: "應用字彙" },
+              { word: "copy", pos: "v.", zh: "抄襲；複製", cat: "應用字彙" },
+              { word: "teenager", pos: "n.", zh: "青少年", cat: "應用字彙" },
+              { word: "understand", pos: "v.", zh: "瞭解", cat: "應用字彙" },
+              { word: "lately", pos: "adv.", zh: "最近", cat: "應用字彙" },
+              { word: "serious", pos: "adj.", zh: "嚴重的", cat: "應用字彙" },
+              { word: "garbage", pos: "n.", zh: "垃圾", cat: "應用字彙" },
+              { word: "worried", pos: "adj.", zh: "擔心的", cat: "應用字彙" },
+              { word: "envelope", pos: "n.", zh: "信封", cat: "應用字彙" },
+              { word: "stamp", pos: "n.", zh: "郵票", cat: "應用字彙" },
+              { word: "appearance", pos: "n.", zh: "外表；外觀", cat: "認識字彙" },
+              { word: "weight", pos: "n.", zh: "體重", cat: "認識字彙" },
+              { word: "balanced", pos: "adj.", zh: "均衡的", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "5-2",
+            title: "5-2 單元",
+            words: [
+              { word: "actor", pos: "n.", zh: "演員", cat: "應用字彙" },
+              { word: "touch", pos: "v.", zh: "觸動；碰觸", cat: "應用字彙" },
+              { word: "heart", pos: "n.", zh: "心；心臟", cat: "應用字彙" },
+              { word: "surprise", pos: "v./n.", zh: "(使)驚訝", cat: "應用字彙" },
+              { word: "bored", pos: "adj.", zh: "感到無聊的", cat: "應用字彙" },
+              { word: "guess", pos: "v./n.", zh: "猜測", cat: "應用字彙" },
+              { word: "several", pos: "adj.", zh: "幾個的", cat: "應用字彙" },
+              { word: "exciting", pos: "adj.", zh: "令人興奮的", cat: "應用字彙" },
+              { word: "ghost", pos: "n.", zh: "鬼", cat: "應用字彙" },
+              { word: "castle", pos: "n.", zh: "城堡", cat: "應用字彙" },
+              { word: "interested", pos: "adj.", zh: "感興趣的", cat: "應用字彙" },
+              { word: "boring", pos: "adj.", zh: "無聊的", cat: "應用字彙" },
+              { word: "download", pos: "v.", zh: "下載", cat: "應用字彙" },
+              { word: "Internet", pos: "n.", zh: "網路(= Net)", cat: "應用字彙" },
+              { word: "excited", pos: "adj.", zh: "感到興奮的", cat: "應用字彙" },
+              { word: "ticket", pos: "n.", zh: "票", cat: "應用字彙" },
+              { word: "online", pos: "adv./adj.", zh: "在網上；線上的", cat: "應用字彙" },
+              { word: "proud", pos: "adj.", zh: "自豪的；驕傲的", cat: "應用字彙" },
+              { word: "actress", pos: "n.", zh: "女演員", cat: "應用字彙" },
+              { word: "newspaper", pos: "n.", zh: "報紙", cat: "應用字彙" },
+              { word: "sentence", pos: "n.", zh: "句子", cat: "應用字彙" },
+              { word: "talented", pos: "adj.", zh: "有才華的", cat: "認識字彙" },
+              { word: "award", pos: "n.", zh: "獎項", cat: "認識字彙" },
+              { word: "source", pos: "n.", zh: "來源", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "5-3",
+            title: "5-3 單元",
+            words: [
+              { word: "pleasure", pos: "n.", zh: "愉快；榮幸", cat: "應用字彙" },
+              { word: "attack", pos: "v./n.", zh: "攻擊", cat: "應用字彙" },
+              { word: "bridge", pos: "n.", zh: "橋", cat: "應用字彙" },
+              { word: "smoke", pos: "n./v.", zh: "煙霧；抽菸", cat: "應用字彙" },
+              { word: "puppy", pos: "n.", zh: "幼犬", cat: "應用字彙" },
+              { word: "middle", pos: "n.", zh: "中間", cat: "應用字彙" },
+              { word: "carry", pos: "v.", zh: "攜帶", cat: "應用字彙" },
+              { word: "wallet", pos: "n.", zh: "錢包", cat: "應用字彙" },
+              { word: "pocket", pos: "n.", zh: "口袋", cat: "應用字彙" },
+              { word: "area", pos: "n.", zh: "區域", cat: "應用字彙" },
+              { word: "glue", pos: "n.", zh: "膠水", cat: "應用字彙" },
+              { word: "badminton", pos: "n.", zh: "羽毛球", cat: "應用字彙" },
+              { word: "tennis", pos: "n.", zh: "網球", cat: "應用字彙" },
+              { word: "basket", pos: "n.", zh: "籃子", cat: "應用字彙" },
+              { word: "notice", pos: "v./n.", zh: "注意到；告示", cat: "應用字彙" },
+              { word: "modern", pos: "adj.", zh: "現代的", cat: "應用字彙" },
+              { word: "program", pos: "n.", zh: "計畫；節目", cat: "應用字彙" },
+              { word: "volunteer", pos: "v./n.", zh: "自願參加；志工", cat: "認識字彙" },
+              { word: "address", pos: "n.", zh: "地址", cat: "認識字彙" },
+              { word: "hero", pos: "n.", zh: "英雄", cat: "認識字彙" },
+              { word: "warn", pos: "v.", zh: "警告", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "5-4",
+            title: "5-4 單元",
+            words: [
+              { word: "gate", pos: "n.", zh: "大門", cat: "應用字彙" },
+              { word: "file", pos: "n.", zh: "檔案", cat: "應用字彙" },
+              { word: "quiz", pos: "n.", zh: "小考", cat: "應用字彙" },
+              { word: "blackboard", pos: "n.", zh: "黑板", cat: "應用字彙" },
+              { word: "chalk", pos: "n.", zh: "粉筆", cat: "應用字彙" },
+              { word: "screen", pos: "n.", zh: "螢幕", cat: "應用字彙" },
+              { word: "error", pos: "n.", zh: "錯誤", cat: "應用字彙" },
+              { word: "button", pos: "n.", zh: "按鈕；鈕扣", cat: "應用字彙" },
+              { word: "enter", pos: "v.", zh: "輸入；進入", cat: "應用字彙" },
+              { word: "whether", pos: "conj.", zh: "是否", cat: "應用字彙" },
+              { word: "machine", pos: "n.", zh: "機器", cat: "應用字彙" },
+              { word: "dozen", pos: "n.", zh: "(一)打", cat: "應用字彙" },
+              { word: "boil", pos: "v.", zh: "煮沸", cat: "應用字彙" },
+              { word: "refrigerator", pos: "n.", zh: "冰箱(=fridge)", cat: "應用字彙" },
+              { word: "upload", pos: "v.", zh: "上傳", cat: "應用字彙" },
+              { word: "collect", pos: "v.", zh: "收集", cat: "應用字彙" },
+              { word: "couch", pos: "n.", zh: "沙發", cat: "應用字彙" },
+              { word: "cellphone", pos: "n.", zh: "手機", cat: "應用字彙" },
+              { word: "correct", pos: "v./adj.", zh: "更正；正確的", cat: "應用字彙" },
+              { word: "ability", pos: "n.", zh: "能力", cat: "認識字彙" },
+              { word: "translate", pos: "v.", zh: "翻譯", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "5-5",
+            title: "5-5 單元",
+            words: [
+              { word: "arrive", pos: "v.", zh: "抵達", cat: "應用字彙" },
+              { word: "planet", pos: "n.", zh: "行星", cat: "應用字彙" },
+              { word: "outside", pos: "prep./adv.", zh: "在外面；外面(的)", cat: "應用字彙" },
+              { word: "restroom", pos: "n.", zh: "洗手間", cat: "應用字彙" },
+              { word: "uniform", pos: "n.", zh: "制服", cat: "應用字彙" },
+              { word: "bottom", pos: "n.", zh: "臀部；底部", cat: "應用字彙" },
+              { word: "belong", pos: "v.", zh: "屬於", cat: "應用字彙" },
+              { word: "square", pos: "adj./n.", zh: "正方形的；正方形", cat: "應用字彙" },
+              { word: "neighbor", pos: "n.", zh: "鄰居", cat: "應用字彙" },
+              { word: "foreigner", pos: "n.", zh: "外國人", cat: "應用字彙" },
+              { word: "hobby", pos: "n.", zh: "嗜好", cat: "應用字彙" },
+              { word: "businessman", pos: "n.", zh: "商人", cat: "應用字彙" },
+              { word: "business", pos: "n.", zh: "生意；事業", cat: "應用字彙" },
+              { word: "dictionary", pos: "n.", zh: "字典", cat: "應用字彙" },
+              { word: "prize", pos: "n.", zh: "獎", cat: "應用字彙" },
+              { word: "topic", pos: "n.", zh: "主題", cat: "應用字彙" },
+              { word: "knowledge", pos: "n.", zh: "知識", cat: "應用字彙" },
+              { word: "public", pos: "n./adj.", zh: "公眾(的)", cat: "應用字彙" },
+              { word: "character", pos: "n.", zh: "角色", cat: "認識字彙" },
+              { word: "describe", pos: "v.", zh: "描述", cat: "認識字彙" },
+              { word: "meaning", pos: "n.", zh: "意思", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "5-6",
+            title: "5-6 單元",
+            words: [
+              { word: "artist", pos: "n.", zh: "藝術家", cat: "應用字彙" },
+              { word: "college", pos: "n.", zh: "大學", cat: "應用字彙" },
+              { word: "knock", pos: "v.", zh: "敲", cat: "應用字彙" },
+              { word: "apartment", pos: "n.", zh: "公寓", cat: "應用字彙" },
+              { word: "glad", pos: "adj.", zh: "高興的", cat: "應用字彙" },
+              { word: "town", pos: "n.", zh: "城鎮", cat: "應用字彙" },
+              { word: "polite", pos: "adj.", zh: "有禮貌的", cat: "應用字彙" },
+              { word: "seat", pos: "n.", zh: "座位", cat: "應用字彙" },
+              { word: "beside", pos: "prep.", zh: "在…旁邊", cat: "應用字彙" },
+              { word: "except", pos: "prep.", zh: "除了", cat: "應用字彙" },
+              { word: "blank", pos: "adj./n.", zh: "空白(的)", cat: "應用字彙" },
+              { word: "present", pos: "n.", zh: "禮物", cat: "應用字彙" },
+              { word: "invite", pos: "v.", zh: "邀請", cat: "應用字彙" },
+              { word: "perhaps", pos: "adv.", zh: "或許", cat: "應用字彙" },
+              { word: "sidewalk", pos: "n.", zh: "人行道", cat: "應用字彙" },
+              { word: "serious", pos: "adj.", zh: "認真的", cat: "一字多義" },
+              { word: "blind", pos: "adj.", zh: "盲的", cat: "應用字彙" },
+              { word: "paper", pos: "n.", zh: "紙", cat: "應用字彙" },
+              { word: "rich", pos: "adj.", zh: "豐富的；富有的", cat: "一字多義" },
+              { word: "visitor", pos: "n.", zh: "遊客；參觀者", cat: "應用字彙" },
+              { word: "shout", pos: "v./n.", zh: "喊叫", cat: "應用字彙" },
+              { word: "culture", pos: "n.", zh: "文化", cat: "認識字彙" },
+              { word: "diary", pos: "n.", zh: "日記", cat: "認識字彙" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "B6",
+        name: "第6冊",
+        grade: "九下",
+        units: [
+          {
+            id: "6-1",
+            title: "6-1 單元",
+            words: [
+              { word: "north", pos: "adv./n./adj.", zh: "向北地；北方(的)", cat: "應用字彙" },
+              { word: "south", pos: "adv./n./adj.", zh: "向南地；南方(的)", cat: "應用字彙" },
+              { word: "east", pos: "adv./n./adj.", zh: "向東地；東方(的)", cat: "應用字彙" },
+              { word: "west", pos: "adv./n./adj.", zh: "向西地；西方(的)", cat: "應用字彙" },
+              { word: "get married", pos: "phr.", zh: "結婚", cat: "應用字彙" },
+              { word: "neither", pos: "adv.", zh: "也不", cat: "應用字彙" },
+              { word: "shy", pos: "adj.", zh: "害羞的", cat: "應用字彙" },
+              { word: "lonely", pos: "adj.", zh: "寂寞的；孤單的", cat: "應用字彙" },
+              { word: "deal", pos: "n.", zh: "約定；交易", cat: "應用字彙" },
+              { word: "date", pos: "v./n.", zh: "約會", cat: "一字多義" },
+              { word: "queen", pos: "n.", zh: "皇后", cat: "應用字彙" },
+              { word: "national", pos: "adj.", zh: "國家的", cat: "應用字彙" },
+              { word: "quite", pos: "adv.", zh: "相當", cat: "應用字彙" },
+              { word: "power", pos: "n.", zh: "力量", cat: "應用字彙" },
+              { word: "course", pos: "n.", zh: "課程；路線", cat: "一字多義" },
+              { word: "graduate", pos: "v.", zh: "畢業", cat: "認識字彙" },
+              { word: "graduation", pos: "n.", zh: "畢業", cat: "認識字彙" },
+              { word: "decision", pos: "n.", zh: "決定", cat: "認識字彙" },
+              { word: "skill", pos: "n.", zh: "技能", cat: "認識字彙" },
+              { word: "goal", pos: "n.", zh: "目標", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "6-2",
+            title: "6-2 單元",
+            words: [
+              { word: "blanket", pos: "n.", zh: "毯子", cat: "應用字彙" },
+              { word: "stupid", pos: "adj.", zh: "愚蠢的", cat: "應用字彙" },
+              { word: "mind", pos: "v.", zh: "介意", cat: "一字多義" },
+              { word: "study", pos: "n./v.", zh: "研究", cat: "一字多義" },
+              { word: "stay up", pos: "phr.", zh: "熬夜", cat: "一字多義" },
+              { word: "tidy", pos: "adj./v.", zh: "整齊的；整理", cat: "應用字彙" },
+              { word: "item", pos: "n.", zh: "品項", cat: "應用字彙" },
+              { word: "repeat", pos: "v.", zh: "重複", cat: "應用字彙" },
+              { word: "package", pos: "n.", zh: "包裹", cat: "應用字彙" },
+              { word: "language", pos: "n.", zh: "語言", cat: "應用字彙" },
+              { word: "wave", pos: "v.", zh: "揮手；揮舞", cat: "一字多義" },
+              { word: "store", pos: "v.", zh: "儲存", cat: "一字多義" },
+              { word: "letter", pos: "n.", zh: "字母", cat: "一字多義" },
+              { word: "focus", pos: "v./n.", zh: "專注；焦點", cat: "認識字彙" },
+              { word: "addiction", pos: "n.", zh: "成癮", cat: "認識字彙" },
+              { word: "schedule", pos: "n.", zh: "計畫表", cat: "認識字彙" },
+              { word: "review", pos: "v./n.", zh: "複習", cat: "認識字彙" },
+              { word: "daily", pos: "adj.", zh: "日常的", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "6-3",
+            title: "6-3 單元",
+            words: [
+              { word: "while", pos: "conj.", zh: "當…時", cat: "應用字彙" },
+              { word: "point out", pos: "phr.", zh: "指出", cat: "一字多義" },
+              { word: "please", pos: "v.", zh: "(使)滿意；取悅", cat: "一字多義" },
+              { word: "case", pos: "n.", zh: "案例", cat: "一字多義" },
+              { word: "point", pos: "n.", zh: "議論；論點", cat: "一字多義" },
+              { word: "depend on", pos: "phr.", zh: "仰賴；取決於", cat: "認識字彙" },
+              { word: "critically", pos: "adv.", zh: "批判地", cat: "認識字彙" },
+              { word: "instead", pos: "adv.", zh: "作為替代", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "6-4",
+            title: "6-4 單元",
+            words: [
+              { word: "vote", pos: "v./n.", zh: "投票", cat: "應用字彙" },
+              { word: "election", pos: "n.", zh: "選舉", cat: "應用字彙" },
+              { word: "check in", pos: "phr.", zh: "報到", cat: "一字多義" },
+              { word: "leave for", pos: "phr.", zh: "前往", cat: "一字多義" },
+              { word: "stamp", pos: "n./v.", zh: "印章；蓋章", cat: "一字多義" },
+              { word: "following", pos: "n./adj.", zh: "以下(的)", cat: "一字多義" },
+              { word: "deal with", pos: "phr.", zh: "處理；負責", cat: "一字多義" },
+              { word: "candidate", pos: "n.", zh: "候選人", cat: "認識字彙" },
+              { word: "step", pos: "n.", zh: "步驟", cat: "認識字彙" },
+              { word: "ballot", pos: "n.", zh: "選票", cat: "認識字彙" },
+              { word: "ID card", pos: "n.", zh: "身分證", cat: "認識字彙" }
+            ]
+          },
+          {
+            id: "6-CF",
+            title: "6-CF 文化節慶",
+            words: [
+              { word: "take on", pos: "phr.", zh: "具有；呈現", cat: "一字多義" },
+              { word: "present", pos: "adj./n.", zh: "現在(的)；目前(的)", cat: "一字多義" },
+              { word: "indigenous", pos: "adj.", zh: "原住民的；本土的", cat: "認識字彙" },
+              { word: "carving", pos: "n.", zh: "雕刻(品)", cat: "認識字彙" },
+              { word: "faith", pos: "n.", zh: "信仰", cat: "認識字彙" },
+              { word: "harvest", pos: "n./v.", zh: "收穫", cat: "認識字彙" },
+              { word: "scare", pos: "v.", zh: "使驚嚇", cat: "認識字彙" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    let customVocabList = [];
+    let activeVolTab = "B1";
+    // Default selected units: Book 1 Units 1-1 ~ 1-6
+    let selectedUnitIds = new Set(["1-1", "1-2", "1-3", "1-4", "1-5", "1-6"]);
+    let selectedWordCats = new Set(["應用字彙", "一字多義", "認識字彙"]);
+    let includeCustomVocab = false;
+
+    /* ==========================================================================
+       2. WEB AUDIO API SYNTHESIZER (SFX & DYNAMIC BATTLE BGM)
+       ========================================================================== */
+    let audioCtx = null;
+    let isMuted = false;
+    let bgmTimer = null;
+    let bgmStep = 0;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleSound() {
+      isMuted = !isMuted;
+      const icon = document.getElementById('icon-sound');
+      const label = document.getElementById('label-sound');
+      if (isMuted) {
+        icon.className = "fa-solid fa-volume-xmark text-red-500";
+        label.innerText = "靜音 OFF";
+        stopBGM();
+      } else {
+        icon.className = "fa-solid fa-music text-amber-500";
+        label.innerText = "音樂 ON";
+        initAudio();
+        playSfx('click');
+        startBGM();
+      }
+    }
+
+    /* Procedural Dynamic Battle BGM Generator */
+    function startBGM() {
+      if (isMuted || bgmTimer) return;
+      initAudio();
+      bgmStep = 0;
+      scheduleNextBGMStep();
+    }
+
+    function stopBGM() {
+      if (bgmTimer) {
+        clearTimeout(bgmTimer);
+        bgmTimer = null;
+      }
+    }
+
+    function scheduleNextBGMStep() {
+      if (isMuted) return;
+      const now = audioCtx.currentTime;
+      
+      // Check for Match Point (1 point away from winning) -> Speed up rhythm!
+      const isMatchPoint = Math.abs(gameState.score) >= gameState.maxScore - 1 && gameState.score !== 0;
+      const stepDuration = isMatchPoint ? 0.13 : 0.17; // Faster tempo on match point
+
+      // Pentatonic energetic scale notes (C4, D4, E4, G4, A4, C5)
+      const bassNotes = [130.81, 130.81, 164.81, 146.83, 196.00, 196.00, 220.00, 196.00];
+      const melodyNotes = [261.63, 329.63, 392.00, 523.25, 440.00, 392.00, 329.63, 293.66];
+
+      // Bass synth note
+      const bassFreq = bassNotes[bgmStep % bassNotes.length] * (isMatchPoint ? 1.12 : 1.0);
+      const oscBass = audioCtx.createOscillator();
+      const gainBass = audioCtx.createGain();
+      oscBass.type = 'triangle';
+      oscBass.frequency.setValueAtTime(bassFreq, now);
+      gainBass.gain.setValueAtTime(0.08, now);
+      gainBass.gain.exponentialRampToValueAtTime(0.001, now + stepDuration * 0.9);
+      oscBass.connect(gainBass);
+      gainBass.connect(audioCtx.destination);
+      oscBass.start(now);
+      oscBass.stop(now + stepDuration * 0.9);
+
+      // Melody arpeggio tick on even steps
+      if (bgmStep % 2 === 0) {
+        const melFreq = melodyNotes[(bgmStep / 2) % melodyNotes.length] * (isMatchPoint ? 1.12 : 1.0);
+        const oscMel = audioCtx.createOscillator();
+        const gainMel = audioCtx.createGain();
+        oscMel.type = 'sine';
+        oscMel.frequency.setValueAtTime(melFreq, now);
+        gainMel.gain.setValueAtTime(0.05, now);
+        gainMel.gain.exponentialRampToValueAtTime(0.001, now + stepDuration * 0.7);
+        oscMel.connect(gainMel);
+        gainMel.connect(audioCtx.destination);
+        oscMel.start(now);
+        oscMel.stop(now + stepDuration * 0.7);
+      }
+
+      // Percussion Tick (Hi-hat noise)
+      if (bgmStep % 4 === 2 || isMatchPoint) {
+        const oscTick = audioCtx.createOscillator();
+        const gainTick = audioCtx.createGain();
+        oscTick.type = 'square';
+        oscTick.frequency.setValueAtTime(800, now);
+        gainTick.gain.setValueAtTime(0.02, now);
+        gainTick.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+        oscTick.connect(gainTick);
+        gainTick.connect(audioCtx.destination);
+        oscTick.start(now);
+        oscTick.stop(now + 0.03);
+      }
+
+      bgmStep++;
+      bgmTimer = setTimeout(scheduleNextBGMStep, stepDuration * 1000);
+    }
+
+    function playSfx(type) {
+      if (isMuted) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.04);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } else if (type === 'correct') {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+          gain.gain.setValueAtTime(0.18, now + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.2);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.05);
+          osc.stop(now + idx * 0.05 + 0.2);
+        });
+      } else if (type === 'wrong') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'splash') {
+        const bufferSize = audioCtx.sampleRate * 0.4;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, now);
+        filter.frequency.linearRampToValueAtTime(200, now + 0.4);
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start(now);
+      } else if (type === 'thud') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(130, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.35);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === 'win') {
+        const melody = [523.25, 659.25, 783.99, 1046.50, 880, 1046.50];
+        melody.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.12);
+          gain.gain.setValueAtTime(0.25, now + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.12);
+          osc.stop(now + i * 0.12 + 0.3);
+        });
+      }
+    }
+
+    function speakCurrentWord() {
+      if (!gameState.currentWord) return;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(gameState.currentWord.word);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.85;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    /* ==========================================================================
+       3. GAME STATE MANAGEMENT & LOGIC
+       ========================================================================== */
+    const gameState = {
+      mode: 'tug',             // 'tug' | 'boulder' | 'cake'
+      difficulty: 'normal',    // 'easy' | 'normal' | 'hard'
+      maxScore: 5,             // Target win score (3 / 5 / 7)
+      score: 0,                // Progress: -maxScore (Left Red winning) to +maxScore (Right Blue winning)
+      leftCombo: 0,
+      rightCombo: 0,
+      strikes: 0,              // Combined wrong attempts for current question (Max 3)
+      leftInput: "",
+      rightInput: "",
+      leftStunned: false,
+      rightStunned: false,
+      currentWord: null,
+      revealedIndices: [],     // Track revealed letters for teacher hints
+      activePool: [],
+      isGameOver: false,
+      winnerSide: null,        // 'left' | 'right' | null
+      cinematicTimer: 0,       // Timestamp when win occurred
+      cinematicTriggered: false
+    };
+
+    /* Hanlin Volume & Unit Selector UI Renderer */
+    function renderHanlinSelector() {
+      const tabsContainer = document.getElementById('hanlin-vol-tabs');
+      const unitContainer = document.getElementById('hanlin-unit-list');
+      const currentVol = HANLIN_CURRICULUM.find(v => v.id === activeVolTab) || HANLIN_CURRICULUM[0];
+
+      // 1. Render Volume Tabs (第1冊 ~ 第6冊)
+      tabsContainer.innerHTML = "";
+      HANLIN_CURRICULUM.forEach(vol => {
+        const checkedCount = vol.units.filter(u => selectedUnitIds.has(u.id)).length;
+        const isActive = vol.id === activeVolTab;
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.onclick = () => {
+          playSfx('click');
+          activeVolTab = vol.id;
+          renderHanlinSelector();
+        };
+        btn.className = isActive
+          ? "py-1.5 px-1 rounded-xl bg-amber-500 text-white font-black text-[11px] shadow-sm flex flex-col items-center leading-tight"
+          : "py-1.5 px-1 rounded-xl bg-white hover:bg-amber-100 text-slate-700 font-bold text-[11px] border border-amber-200 flex flex-col items-center leading-tight";
+        btn.innerHTML = `<span>${vol.name}</span><span class="text-[9px] opacity-85">${checkedCount}/${vol.units.length}</span>`;
+        tabsContainer.appendChild(btn);
+      });
+
+      // 2. Render Current Volume Master Checkbox
+      const firstUnit = currentVol.units[0].id;
+      const lastUnit = currentVol.units[currentVol.units.length - 1].id;
+      document.getElementById('current-vol-title').innerText = `${currentVol.name} (${firstUnit} ~ ${lastUnit}) 全冊勾選`;
+      const allVolChecked = currentVol.units.every(u => selectedUnitIds.has(u.id));
+      document.getElementById('chk-current-vol').checked = allVolChecked;
+
+      // 3. Render Units Checkboxes
+      unitContainer.innerHTML = "";
+      currentVol.units.forEach(unit => {
+        const isChecked = selectedUnitIds.has(unit.id);
+        const filteredCount = unit.words.filter(w => selectedWordCats.has(w.cat)).length;
+        const label = document.createElement('label');
+        label.className = `flex items-center gap-1.5 p-1.5 rounded-xl border cursor-pointer transition ${
+          isChecked ? 'bg-amber-100/80 border-amber-400 text-amber-950 font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+        }`;
+        label.innerHTML = `
+          <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSingleUnit('${unit.id}', this.checked)" class="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer">
+          <div class="truncate flex-1">
+            <div class="text-[11px] truncate">${unit.title}</div>
+            <div class="text-[9px] text-slate-500">符合 ${filteredCount} 詞</div>
+          </div>
+        `;
+        unitContainer.appendChild(label);
+      });
+
+      // 4. Update Total Summary Badge
+      updateHanlinSummaryBadge();
+    }
+
+    function toggleWordCat(catName, checked) {
+      playSfx('click');
+      if (checked) selectedWordCats.add(catName);
+      else selectedWordCats.delete(catName);
+      renderHanlinSelector();
+    }
+
+    function toggleSingleUnit(unitId, checked) {
+      playSfx('click');
+      if (checked) selectedUnitIds.add(unitId);
+      else selectedUnitIds.delete(unitId);
+      renderHanlinSelector();
+    }
+
+    function toggleCurrentVolume(checked) {
+      playSfx('click');
+      const currentVol = HANLIN_CURRICULUM.find(v => v.id === activeVolTab);
+      if (!currentVol) return;
+      currentVol.units.forEach(u => {
+        if (checked) selectedUnitIds.add(u.id);
+        else selectedUnitIds.delete(u.id);
+      });
+      renderHanlinSelector();
+    }
+
+    function toggleAllHanlinUnits(selectAll) {
+      playSfx('click');
+      HANLIN_CURRICULUM.forEach(vol => {
+        vol.units.forEach(u => {
+          if (selectAll) selectedUnitIds.add(u.id);
+          else selectedUnitIds.delete(u.id);
+        });
+      });
+      renderHanlinSelector();
+    }
+
+    function updateHanlinSummaryBadge() {
+      let totalUnits = 0;
+      let totalWords = 0;
+      const activeVolNames = [];
+
+      HANLIN_CURRICULUM.forEach(vol => {
+        const volChecked = vol.units.filter(u => selectedUnitIds.has(u.id));
+        if (volChecked.length > 0) {
+          activeVolNames.push(`${vol.name}(${volChecked.length}單元)`);
+          totalUnits += volChecked.length;
+          volChecked.forEach(u => {
+            totalWords += u.words.filter(w => selectedWordCats.has(w.cat)).length;
+          });
+        }
+      });
+
+      if (includeCustomVocab && customVocabList.length > 0) {
+        totalWords += customVocabList.length;
+      }
+
+      const summaryEl = document.getElementById('selected-summary-badge');
+      if (summaryEl) {
+        summaryEl.innerText = `已選 ${totalUnits} 單元 (${totalWords} 詞)`;
+      }
+
+      const headerBadge = document.getElementById('word-category');
+      if (headerBadge) {
+        if (activeVolNames.length === 0 && includeCustomVocab && customVocabList.length > 0) {
+          headerBadge.innerText = `115佳音翰林：教師自訂 (${customVocabList.length}詞)`;
+        } else if (activeVolNames.length > 0) {
+          const prefix = activeVolNames.length <= 2 ? activeVolNames.join('+') : `跨冊共 ${totalUnits} 單元`;
+          headerBadge.innerText = `115佳音翰林：${prefix}`;
+        } else {
+          headerBadge.innerText = `115佳音翰林：第1冊`;
+        }
+      }
+    }
+
+    function clearInput(side) {
+      playSfx('click');
+      if (side === 'left') gameState.leftInput = "";
+      else gameState.rightInput = "";
+      updateInputDisplays();
+    }
+
+    function updateInputDisplays() {
+      const displayL = document.getElementById('input-display-left');
+      const displayR = document.getElementById('input-display-right');
+
+      displayL.innerHTML = gameState.leftInput ? gameState.leftInput.toUpperCase().split('').map(c => `<span class="px-1.5 py-0.5 bg-white border border-red-300 rounded shadow-sm">${c}</span>`).join('') : `<span class="text-xs text-red-300 font-normal">點擊鍵盤拼字...</span>`;
+      displayR.innerHTML = gameState.rightInput ? gameState.rightInput.toUpperCase().split('').map(c => `<span class="px-1.5 py-0.5 bg-white border border-blue-300 rounded shadow-sm">${c}</span>`).join('') : `<span class="text-xs text-blue-300 font-normal">點擊鍵盤拼字...</span>`;
+    }
+
+    function buildKeypads() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+      ['left', 'right'].forEach(side => {
+        const container = document.getElementById(`keypad-${side}`);
+        if (!container) return;
+        container.innerHTML = "";
+
+        letters.forEach(letter => {
+          const btn = document.createElement('button');
+          btn.type = "button";
+          btn.innerText = letter;
+          btn.className = "key-btn bg-white hover:bg-slate-50 text-slate-800 font-fredoka font-bold text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg select-none";
+          btn.onclick = () => handleLetterClick(side, letter);
+          container.appendChild(btn);
+        });
+
+        // Clear Button
+        const clearBtn = document.createElement('button');
+        clearBtn.type = "button";
+        clearBtn.innerHTML = '<i class="fa-solid fa-delete-left"></i> 清除';
+        clearBtn.className = "key-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[11px] sm:text-xs py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-0.5";
+        clearBtn.onclick = () => clearInput(side);
+        container.appendChild(clearBtn);
+
+        // Submit Button
+        const submitBtn = document.createElement('button');
+        submitBtn.type = "button";
+        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 送出';
+        submitBtn.className = side === 'left'
+          ? "key-btn-red-submit bg-gradient-to-b from-red-500 to-red-600 text-white font-black text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-1"
+          : "key-btn-blue-submit bg-gradient-to-b from-blue-500 to-blue-600 text-white font-black text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-1";
+        submitBtn.onclick = () => submitAnswer(side);
+        container.appendChild(submitBtn);
+      });
+    }
+
+    function handleLetterClick(side, letter) {
+      if (gameState.isGameOver || !gameState.currentWord) return;
+      if (side === 'left' && gameState.leftStunned) return;
+      if (side === 'right' && gameState.rightStunned) return;
+
+      playSfx('click');
+      if (side === 'left') {
+        if (gameState.leftInput.length < 18) gameState.leftInput += letter;
+      } else {
+        if (gameState.rightInput.length < 18) gameState.rightInput += letter;
+      }
+      updateInputDisplays();
+    }
+
+    function buildWordPool() {
+      let combined = [];
+
+      HANLIN_CURRICULUM.forEach(vol => {
+        vol.units.forEach(unit => {
+          if (selectedUnitIds.has(unit.id)) {
+            unit.words.forEach(w => {
+              if (selectedWordCats.has(w.cat)) {
+                combined.push({
+                  ...w,
+                  unitTag: `${unit.id} [${w.cat}]`
+                });
+              }
+            });
+          }
+        });
+      });
+
+      if (includeCustomVocab && customVocabList.length > 0) {
+        combined = combined.concat(customVocabList);
+      }
+
+      // Fallback to 1-1 if user unchecked everything
+      if (combined.length === 0) {
+        selectedUnitIds.add("1-1");
+        selectedWordCats.add("應用字彙");
+        combined = HANLIN_CURRICULUM[0].units[0].words.map(w => ({
+          ...w,
+          unitTag: `1-1 [${w.cat}]`
+        }));
+      }
+
+      gameState.activePool = combined;
+      updateHanlinSummaryBadge();
+    }
+
+    function nextQuestion() {
+      if (gameState.activePool.length === 0) {
+        buildWordPool();
+      }
+      const randomIndex = Math.floor(Math.random() * gameState.activePool.length);
+      gameState.currentWord = gameState.activePool[randomIndex];
+      gameState.activePool.splice(randomIndex, 1);
+
+      // Reset Inputs & Strikes
+      gameState.leftInput = "";
+      gameState.rightInput = "";
+      gameState.strikes = 0;
+      gameState.revealedIndices = [];
+      updateInputDisplays();
+      updateStrikeUI();
+      document.getElementById('skip-toast').classList.add('hidden');
+
+      // Render Word Card & Unit Tag
+      document.getElementById('word-pos').innerText = gameState.currentWord.pos;
+      document.getElementById('word-zh').innerText = gameState.currentWord.zh;
+      if (gameState.currentWord.unitTag) {
+        document.getElementById('word-category').innerText = `115佳音翰林 ${gameState.currentWord.unitTag}`;
+      }
+
+      // Setup initial revealed indices based on difficulty
+      const word = gameState.currentWord.word.toLowerCase();
+      for (let i = 0; i < word.length; i++) {
+        if (word[i] === ' ') {
+          gameState.revealedIndices.push(i);
+        } else if (gameState.difficulty === 'easy' && (i === 0 || i === word.length - 1)) {
+          gameState.revealedIndices.push(i);
+        } else if (gameState.difficulty === 'normal' && i === 0) {
+          gameState.revealedIndices.push(i);
+        }
+      }
+      renderWordHint();
+    }
+
+    function renderWordHint() {
+      if (!gameState.currentWord) return;
+      const word = gameState.currentWord.word.toLowerCase();
+      let hintStr = "";
+      for (let i = 0; i < word.length; i++) {
+        if (word[i] === ' ') {
+          hintStr += '  ';
+        } else if (gameState.revealedIndices.includes(i)) {
+          hintStr += word[i] + ' ';
+        } else {
+          hintStr += '_ ';
+        }
+      }
+      document.getElementById('word-hint').innerText = hintStr.trim();
+    }
+
+    /* Teacher Action 1: Reveal One Letter Hint */
+    function teacherHint() {
+      if (gameState.isGameOver || !gameState.currentWord) return;
+      playSfx('click');
+      const word = gameState.currentWord.word.toLowerCase();
+      const unrevealed = [];
+      for (let i = 0; i < word.length; i++) {
+        if (word[i] !== ' ' && !gameState.revealedIndices.includes(i)) {
+          unrevealed.push(i);
+        }
+      }
+      if (unrevealed.length > 0) {
+        const pick = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+        gameState.revealedIndices.push(pick);
+        renderWordHint();
+      }
+      speakCurrentWord();
+    }
+
+    /* Teacher Action 2: Skip Question & Show Answer */
+    function teacherSkip() {
+      if (gameState.isGameOver || !gameState.currentWord) return;
+      playSfx('click');
+      document.getElementById('word-hint').innerText = gameState.currentWord.word.toUpperCase();
+      const toast = document.getElementById('skip-toast');
+      toast.innerText = "⏭️ 老師跳過此題，公布正確答案！";
+      toast.classList.remove('hidden');
+      speakCurrentWord();
+
+      setTimeout(() => {
+        if (!gameState.isGameOver) {
+          nextQuestion();
+        }
+      }, 1300);
+    }
+
+    function updateStrikeUI() {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`strike-${i}`);
+        if (i <= gameState.strikes) {
+          dot.className = "strike-dot text-red-500 text-xs strike-active";
+        } else {
+          dot.className = "strike-dot text-slate-300 text-xs";
+        }
+      }
+    }
+
+    function submitAnswer(side) {
+      if (gameState.isGameOver) return;
+      if (!gameState.currentWord) return;
+
+      const targetWord = gameState.currentWord.word.toLowerCase().replace(/\s+/g, '');
+      const userWord = (side === 'left' ? gameState.leftInput : gameState.rightInput).toLowerCase().replace(/\s+/g, '');
+
+      if (!userWord) return;
+
+      if (userWord === targetWord) {
+        // CORRECT ANSWER!
+        playSfx('correct');
+        const card = document.getElementById('word-card');
+        card.classList.add('shake-anim');
+        setTimeout(() => card.classList.remove('shake-anim'), 400);
+
+        // Trigger Mobile Game Juice (Camera Shake, Shockwave & Floating Popup)
+        triggerCameraShake(10);
+        const fxX = side === 'left' ? canvas.width * 0.28 : canvas.width * 0.72;
+        const fxY = canvas.height * 0.45;
+        spawnShockwave(fxX, fxY, side === 'left' ? '#F43F5E' : '#3B82F6');
+
+        if (side === 'left') {
+          gameState.leftCombo++;
+          gameState.rightCombo = 0;
+          const boost = gameState.leftCombo > 1 ? 1.5 : 1.0;
+          gameState.score -= 1 * boost; // Left pushes score negative
+          spawnFloatingText(fxX, fxY - 15, gameState.leftCombo > 1 ? `🔥 COMBO x${gameState.leftCombo}!` : "+1 推進!", "#E11D48");
+        } else {
+          gameState.rightCombo++;
+          gameState.leftCombo = 0;
+          const boost = gameState.rightCombo > 1 ? 1.5 : 1.0;
+          gameState.score += 1 * boost; // Right pushes score positive
+          spawnFloatingText(fxX, fxY - 15, gameState.rightCombo > 1 ? `🔥 COMBO x${gameState.rightCombo}!` : "+1 推進!", "#2563EB");
+        }
+
+        updateScoreUI();
+        updateComboBadges();
+        checkWinCondition();
+
+        if (!gameState.isGameOver) {
+          nextQuestion();
+        }
+      } else {
+        // WRONG ANSWER - Add Strike & Stun Penalty!
+        playSfx('wrong');
+        gameState.strikes++;
+        updateStrikeUI();
+
+        if (side === 'left') {
+          gameState.leftCombo = 0;
+          gameState.leftStunned = true;
+          document.getElementById('stun-left').classList.remove('hidden');
+          setTimeout(() => {
+            gameState.leftStunned = false;
+            document.getElementById('stun-left').classList.add('hidden');
+          }, 1500);
+        } else {
+          gameState.rightCombo = 0;
+          gameState.rightStunned = true;
+          document.getElementById('stun-right').classList.remove('hidden');
+          setTimeout(() => {
+            gameState.rightStunned = false;
+            document.getElementById('stun-right').classList.add('hidden');
+          }, 1500);
+        }
+        updateComboBadges();
+
+        // 3-STRIKE SKIP RULE CHECK
+        if (gameState.strikes >= 3) {
+          document.getElementById('word-hint').innerText = gameState.currentWord.word.toUpperCase();
+          const toast = document.getElementById('skip-toast');
+          toast.innerText = "❌ 雙方合計答錯 3 次，跳過此題！";
+          toast.classList.remove('hidden');
+          speakCurrentWord();
+
+          setTimeout(() => {
+            if (!gameState.isGameOver) {
+              nextQuestion();
+            }
+          }, 1400);
+        }
+      }
+    }
+
+    function updateScoreUI() {
+      if (gameState.score < -gameState.maxScore) gameState.score = -gameState.maxScore;
+      if (gameState.score > gameState.maxScore) gameState.score = gameState.maxScore;
+
+      const leftPts = Math.max(0, Math.round(-gameState.score));
+      const rightPts = Math.max(0, Math.round(gameState.score));
+      document.getElementById('score-left-num').innerText = leftPts;
+      document.getElementById('score-right-num').innerText = rightPts;
+
+      const leftPct = 50 - (gameState.score / gameState.maxScore) * 50;
+      const rightPct = 100 - leftPct;
+
+      document.getElementById('progress-bar-left').style.width = `${leftPct}%`;
+      document.getElementById('progress-bar-right').style.width = `${rightPct}%`;
+
+      // Match point fire glow
+      const barContainer = document.getElementById('energy-bar-container');
+      if (Math.abs(gameState.score) >= gameState.maxScore - 1 && gameState.score !== 0) {
+        barContainer.classList.add('match-point-glow');
+      } else {
+        barContainer.classList.remove('match-point-glow');
+      }
+    }
+
+    function updateComboBadges() {
+      const comboL = document.getElementById('combo-left');
+      const comboR = document.getElementById('combo-right');
+
+      if (gameState.leftCombo > 1) {
+        comboL.innerText = `🔥 Combo x${gameState.leftCombo}`;
+        comboL.classList.remove('hidden');
+      } else {
+        comboL.classList.add('hidden');
+      }
+
+      if (gameState.rightCombo > 1) {
+        comboR.innerText = `🔥 Combo x${gameState.rightCombo}`;
+        comboR.classList.remove('hidden');
+      } else {
+        comboR.classList.add('hidden');
+      }
+    }
+
+    function checkWinCondition() {
+      if (gameState.score <= -gameState.maxScore) {
+        triggerGameOver('left');
+      } else if (gameState.score >= gameState.maxScore) {
+        triggerGameOver('right');
+      }
+    }
+
+    function triggerGameOver(winnerSide) {
+      gameState.isGameOver = true;
+      gameState.winnerSide = winnerSide;
+      gameState.cinematicTimer = Date.now();
+      stopBGM();
+
+      // Snap smoothScore to winning boundary immediately so cinematic triggers right away
+      smoothScore = winnerSide === 'left' ? -gameState.maxScore : gameState.maxScore;
+
+      // Intense Finisher Camera Shake & Shockwave
+      triggerCameraShake(22);
+      const impactX = gameState.mode === 'tug' ? canvas.width / 2 : (winnerSide === 'left' ? canvas.width * 0.84 : canvas.width * 0.16);
+      spawnShockwave(impactX, canvas.height * 0.6, "#FACC15");
+
+      // Play dramatic impact sound immediately
+      if (gameState.mode === 'tug' || gameState.mode === 'cake') {
+        playSfx('splash');
+      } else {
+        playSfx('thud');
+      }
+
+      // Spawn celebration / splash particles
+      spawnCinematicParticles(winnerSide);
+
+      // Delay victory modal by 2.8 seconds so students can enjoy the full win/lose animation
+      setTimeout(() => {
+        playSfx('win');
+        const modal = document.getElementById('modal-gameover');
+        const title = document.getElementById('winner-title');
+        const subtitle = document.getElementById('winner-subtitle');
+
+        if (winnerSide === 'left') {
+          title.innerText = "🎉 赤紅熊隊 榮獲勝利！";
+          title.className = "text-3xl font-black text-red-600 mb-1";
+          subtitle.innerText = gameState.mode === 'tug' ? "全力向左拉繩！成功把湛藍兔隊拖進河裡洗澡！" : (gameState.mode === 'boulder' ? "巨石強勢向右碾壓！把對手壓成可愛紙片餅乾人！" : "砲火全開！巨無霸奶油蛋糕精準命中對手！");
+        } else {
+          title.innerText = "🎉 湛藍兔隊 榮獲勝利！";
+          title.className = "text-3xl font-black text-blue-600 mb-1";
+          subtitle.innerText = gameState.mode === 'tug' ? "全力向右拉繩！成功把赤紅熊隊拖進河裡！" : (gameState.mode === 'boulder' ? "巨石強勢向左滾動！成功把赤紅熊隊壓扁！" : "砲火猛烈！用濃郁奶油蛋糕覆蓋赤紅熊隊！");
+        }
+
+        modal.classList.remove('hidden');
+      }, 2800);
+    }
+
+    function restartGame() {
+      document.getElementById('modal-gameover').classList.add('hidden');
+      gameState.score = 0;
+      smoothScore = 0;
+      gameState.leftCombo = 0;
+      gameState.rightCombo = 0;
+      gameState.isGameOver = false;
+      gameState.winnerSide = null;
+      gameState.cinematicTriggered = false;
+      particles = [];
+      shockwaves = [];
+      floatingTexts = [];
+      updateScoreUI();
+      updateComboBadges();
+      buildWordPool();
+      nextQuestion();
+      startBGM();
+    }
+
+    /* ==========================================================================
+       4. MOBILE-GAME-GRADE CANVAS ENGINE (PARALLAX, SKELETAL RIGS & JUICE VFX)
+       ========================================================================== */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let smoothScore = 0;
+    let particles = [];
+    let shockwaves = [];
+    let floatingTexts = [];
+    let cameraShake = 0;
+
+    // Ambient floating pollen/light motes & background clouds
+    let ambientMotes = Array.from({ length: 18 }, () => ({
+      x: Math.random() * 1000,
+      y: Math.random() * 300,
+      r: Math.random() * 2.5 + 1,
+      speedX: (Math.random() - 0.5) * 0.4,
+      speedY: -Math.random() * 0.3 - 0.1,
+      alpha: Math.random() * 0.6 + 0.2
+    }));
+
+    let bgClouds = [
+      { x: 60, y: 26, scale: 0.9, speed: 0.22 },
+      { x: 320, y: 18, scale: 1.15, speed: 0.15 },
+      { x: 620, y: 32, scale: 0.85, speed: 0.28 }
+    ];
+
+    function triggerCameraShake(intensity) {
+      cameraShake = Math.max(cameraShake, intensity);
+    }
+
+    function spawnShockwave(x, y, color) {
+      shockwaves.push({ x, y, radius: 8, maxRadius: 75, alpha: 0.9, color });
+    }
+
+    function spawnFloatingText(x, y, text, color) {
+      floatingTexts.push({ x, y, text, color, vy: -1.6, alpha: 1.0, scale: 1.25 });
+    }
+
+    function spawnCinematicParticles(winnerSide) {
+      const w = canvas.width;
+      const h = canvas.height;
+      particles = [];
+
+      if (gameState.mode === 'tug') {
+        // Multi-layered water splash droplets & foam
+        for (let i = 0; i < 65; i++) {
+          particles.push({
+            x: w / 2 + (Math.random() - 0.5) * 50,
+            y: h * 0.55,
+            vx: (Math.random() - 0.5) * 12,
+            vy: -Math.random() * 11 - 2,
+            size: Math.random() * 6 + 2.5,
+            color: Math.random() > 0.35 ? '#38BDF8' : '#FFFFFF',
+            gravity: 0.36
+          });
+        }
+      } else if (gameState.mode === 'boulder') {
+        // Dust & golden stars impact burst at losing team's position
+        const targetX = winnerSide === 'left' ? w * 0.84 : w * 0.16;
+        for (let i = 0; i < 45; i++) {
+          particles.push({
+            x: targetX,
+            y: h * 0.72,
+            vx: (Math.random() - 0.5) * 14,
+            vy: -Math.random() * 9 - 1.5,
+            size: Math.random() * 8 + 3,
+            color: Math.random() > 0.4 ? '#E7E5E4' : '#FACC15',
+            gravity: 0.25
+          });
+        }
+      } else if (gameState.mode === 'cake') {
+        // Whipped cream & rainbow sprinkles burst
+        const targetX = winnerSide === 'left' ? w * 0.84 : w * 0.16;
+        const colors = ['#FFFFFF', '#FDA4AF', '#FDE047', '#93C5FD', '#C4B5FD'];
+        for (let i = 0; i < 55; i++) {
+          particles.push({
+            x: targetX,
+            y: h * 0.6,
+            vx: (Math.random() - 0.5) * 13,
+            vy: -Math.random() * 10 - 2,
+            size: Math.random() * 7 + 3,
+            color: colors[i % colors.length],
+            gravity: 0.28
+          });
+        }
+      }
+    }
+
+    function updateAndDrawVFX() {
+      // 1. Shockwaves
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.radius += (sw.maxRadius - sw.radius) * 0.16;
+        sw.alpha -= 0.045;
+        if (sw.alpha <= 0) {
+          shockwaves.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.strokeStyle = sw.color;
+        ctx.globalAlpha = sw.alpha;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 2. Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (p.y > canvas.height + 20) {
+          particles.splice(i, 1);
+        }
+      }
+
+      // 3. Floating Popups (+1, COMBO!)
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy;
+        ft.alpha -= 0.022;
+        ft.scale += (1.0 - ft.scale) * 0.15;
+        if (ft.alpha <= 0) {
+          floatingTexts.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = ft.alpha;
+        ctx.translate(ft.x, ft.y);
+        ctx.scale(ft.scale, ft.scale);
+        ctx.font = "900 18px 'Fredoka', 'Noto Sans TC', sans-serif";
+        ctx.textAlign = "center";
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeText(ft.text, 0, 0);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, 0, 0);
+        ctx.restore();
+      }
+    }
+
+    let waterItems = [
+      { x: 300, type: 'duck', speed: 0.45 },
+      { x: 340, type: 'fish', speed: -0.65 }
+    ];
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      if (!container) return;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      waterItems[0].x = canvas.width / 2 - 15;
+      waterItems[1].x = canvas.width / 2 + 15;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    /* Multi-Layer Parallax Environment Backdrop */
+    function drawParallaxBackdrop(w, h, theme) {
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.78);
+      if (theme === 'tug') {
+        skyGrad.addColorStop(0, "#BAE6FD");
+        skyGrad.addColorStop(1, "#F0F9FF");
+      } else if (theme === 'boulder') {
+        skyGrad.addColorStop(0, "#FDE68A");
+        skyGrad.addColorStop(1, "#FEF3C7");
+      } else {
+        skyGrad.addColorStop(0, "#FBCFE8");
+        skyGrad.addColorStop(1, "#FDF2F8");
+      }
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Soft Drifting Clouds
+      ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
+      bgClouds.forEach(c => {
+        c.x += c.speed;
+        if (c.x > w + 70) c.x = -70;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 16 * c.scale, 0, Math.PI * 2);
+        ctx.arc(c.x + 14 * c.scale, c.y - 4 * c.scale, 20 * c.scale, 0, Math.PI * 2);
+        ctx.arc(c.x + 30 * c.scale, c.y, 15 * c.scale, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Distant Rolling Hills
+      ctx.fillStyle = theme === 'tug' ? "rgba(134, 239, 172, 0.45)" : (theme === 'boulder' ? "rgba(253, 186, 116, 0.4)" : "rgba(244, 114, 182, 0.25)");
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.65);
+      ctx.quadraticCurveTo(w * 0.25, h * 0.28, w * 0.52, h * 0.62);
+      ctx.quadraticCurveTo(w * 0.78, h * 0.32, w, h * 0.6);
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fill();
+
+      // Ambient Floating Pollen / Light Motes
+      ambientMotes.forEach(m => {
+        m.x += m.speedX;
+        m.y += m.speedY;
+        if (m.y < 0) { m.y = h * 0.75; m.x = Math.random() * w; }
+        if (m.x < 0) m.x = w;
+        if (m.x > w) m.x = 0;
+        ctx.fillStyle = `rgba(255, 255, 255, ${m.alpha})`;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    /* Helper: Articulated 2D Game Hero Mascot (Larger Chibi Proportions, Cel-Shaded Outlines & Battle Gear) */
+    function drawCharacter(ctx, type, x, y, state, time) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      // Scale up hero proportions by 1.38x so characters look bold & prominent on classroom big screens
+      const baseScale = 1.38;
+      let stretchX = baseScale;
+      let stretchY = baseScale;
+      let leanAngle = 0;
+      let armAngle = 0;
+      let legStride = 0;
+
+      if (state === 'squashed') {
+        stretchX = baseScale * 2.15;
+        stretchY = baseScale * 0.16;
+        leanAngle = Math.sin(time * 6) * 0.05;
+      } else if (state === 'drowning') {
+        ctx.translate(0, Math.sin(time * 14) * 5);
+        leanAngle = Math.sin(time * 11) * 0.4;
+        armAngle = Math.sin(time * 18) * 1.15;
+      } else if (state === 'celebrate') {
+        const cycle = Math.abs(Math.sin(time * 11));
+        const jump = cycle * 18;
+        ctx.translate(0, -jump);
+        stretchY = baseScale * (1 + cycle * 0.15);
+        stretchX = baseScale * (1 - cycle * 0.08);
+        armAngle = -2.25 + Math.sin(time * 16) * 0.25;
+      } else if (state === 'pulling') {
+        const effort = Math.sin(time * 9);
+        ctx.translate(0, -Math.abs(effort) * 4);
+        stretchX = baseScale * (1 + Math.abs(effort) * 0.06);
+        stretchY = baseScale * (1 - Math.abs(effort) * 0.05);
+        leanAngle = type === 'bear' ? -0.25 : 0.25;
+        legStride = effort * 5.5;
+        armAngle = type === 'bear' ? 0.32 : -0.32;
+      } else if (state === 'pushing') {
+        const effort = Math.sin(time * 10);
+        ctx.translate(0, -Math.abs(effort) * 4);
+        leanAngle = type === 'bear' ? 0.28 : -0.28;
+        legStride = effort * 6.5;
+        armAngle = type === 'bear' ? -0.65 : 0.65;
+      } else {
+        const bounce = Math.abs(Math.sin(time * 6)) * 3.5;
+        ctx.translate(0, -bounce);
+      }
+
+      // Ground Contact Shadow
+      if (state !== 'drowning') {
+        ctx.fillStyle = "rgba(15, 23, 42, 0.2)";
+        ctx.beginPath();
+        ctx.ellipse(0, 24, 24 * (state === 'squashed' ? 1.5 : 1), 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.scale(stretchX, stretchY);
+      ctx.rotate(leanAngle);
+
+      // Cel-shaded dark outline setup
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+
+      // Articulated Sneakers / Boots
+      if (state !== 'drowning') {
+        ctx.fillStyle = type === 'bear' ? "#7F1D1D" : "#1E3A8A";
+        ctx.strokeStyle = "#1E293B";
+        ctx.lineWidth = 1.8;
+        [-7.5 + legStride, 7.5 - legStride].forEach(lx => {
+          ctx.beginPath();
+          ctx.roundRect(lx - 6, 13, 12, 7.5, 4);
+          ctx.fill();
+          ctx.stroke();
+          // White shoe sole
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(lx - 5, 18.5, 10, 2);
+          ctx.fillStyle = type === 'bear' ? "#7F1D1D" : "#1E3A8A";
+        });
+      }
+
+      if (type === 'bear') {
+        // --- RED TEAM HERO: FLAME WARRIOR BEAR ---
+        // Back Arm
+        ctx.save();
+        ctx.translate(-8, 4);
+        ctx.rotate(-armAngle * 0.6);
+        ctx.fillStyle = "#B45309";
+        ctx.strokeStyle = "#1E293B";
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.roundRect(-11, -3, 11, 6.5, 3.5);
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        // Battle Hoodie Torso with Gold Belt & Emblem
+        const torsoGrad = ctx.createLinearGradient(0, -2, 0, 16);
+        torsoGrad.addColorStop(0, "#FF4757");
+        torsoGrad.addColorStop(1, "#BE123C");
+        ctx.fillStyle = torsoGrad;
+        ctx.strokeStyle = "#1E293B";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-14.5, -2, 29, 17.5, 8);
+        ctx.fill(); ctx.stroke();
+
+        // Gold Champion Belt & Star Buckle
+        ctx.fillStyle = "#FACC15";
+        ctx.fillRect(-14, 9, 28, 3.5);
+        ctx.beginPath();
+        ctx.arc(0, 10.7, 3.2, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // Bear Ears with Inner Gold
+        ctx.fillStyle = "#B45309";
+        ctx.beginPath();
+        ctx.arc(-13.5, -21, 6.5, 0, Math.PI * 2);
+        ctx.arc(13.5, -21, 6.5, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#FDE68A";
+        ctx.beginPath();
+        ctx.arc(-13.5, -21, 3.2, 0, Math.PI * 2);
+        ctx.arc(13.5, -21, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Bear Head (Chibi Hero Size)
+        const headGrad = ctx.createRadialGradient(-4, -15, 2, 0, -11, 18);
+        headGrad.addColorStop(0, "#FBBF24");
+        headGrad.addColorStop(1, "#D97706");
+        ctx.fillStyle = headGrad;
+        ctx.beginPath();
+        ctx.arc(0, -11, 16.8, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // Muzzle & Nose
+        ctx.fillStyle = "#FEF3C7";
+        ctx.beginPath();
+        ctx.ellipse(0, -6.5, 8, 5.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#451A03";
+        ctx.beginPath();
+        ctx.arc(0, -8.5, 2.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Crimson Warrior Headband & Flowing Tails
+        ctx.fillStyle = "#EF4444";
+        ctx.beginPath();
+        ctx.roundRect(-16.5, -19.5, 33, 5, 2);
+        ctx.fill(); ctx.stroke();
+        // Flowing headband ribbon on left
+        const ribbonWave = Math.sin(time * 12) * 3;
+        ctx.beginPath();
+        ctx.moveTo(-16, -17);
+        ctx.lineTo(-24, -14 + ribbonWave);
+        ctx.lineTo(-22, -19 + ribbonWave);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Front Arm & Fist Gauntlet
+        ctx.save();
+        ctx.translate(10, 4.5);
+        ctx.rotate(armAngle);
+        ctx.fillStyle = "#D97706";
+        ctx.beginPath();
+        ctx.roundRect(0, -3.2, 13, 6.8, 3.5);
+        ctx.fill(); ctx.stroke();
+        // Red Battle Glove
+        ctx.fillStyle = "#EF4444";
+        ctx.beginPath();
+        ctx.arc(13, 0, 4.2, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      } else {
+        // --- BLUE TEAM HERO: LIGHTNING STRIKER BUNNY ---
+        // Back Arm
+        ctx.save();
+        ctx.translate(8, 4);
+        ctx.rotate(armAngle * 0.6);
+        ctx.fillStyle = "#F8FAFC";
+        ctx.strokeStyle = "#1E293B";
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.roundRect(0, -3, 11, 6.5, 3.5);
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        // Cyber-Sport Jacket Torso
+        const torsoGrad = ctx.createLinearGradient(0, -2, 0, 16);
+        torsoGrad.addColorStop(0, "#38BDF8");
+        torsoGrad.addColorStop(1, "#1D4ED8");
+        ctx.fillStyle = torsoGrad;
+        ctx.strokeStyle = "#1E293B";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-14.5, -2, 29, 17.5, 8);
+        ctx.fill(); ctx.stroke();
+
+        // White Zipper Stripe & Lightning Emblem
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(-2, -1.5, 4, 16.5);
+        ctx.fillStyle = "#FACC15";
+        ctx.beginPath();
+        ctx.arc(0, 7, 3.5, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // Long Expressive Bunny Ears
+        const earSway = Math.sin(time * 8) * 0.09;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.ellipse(-7.5, -29, 5.2, 13, -0.1 + earSway, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(7.5, -29, 5.2, 13, 0.1 + earSway, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // Inner Pink Ears
+        ctx.fillStyle = "#FDA4AF";
+        ctx.beginPath();
+        ctx.ellipse(-7.5, -29, 2.4, 8.5, -0.1 + earSway, 0, Math.PI * 2);
+        ctx.ellipse(7.5, -29, 2.4, 8.5, 0.1 + earSway, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Bunny Head (Chibi Hero Size)
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(0, -11, 16.8, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // Blue Hero Visor / Headband & Flowing Tails
+        ctx.fillStyle = "#2563EB";
+        ctx.beginPath();
+        ctx.roundRect(-16.5, -19.5, 33, 5, 2);
+        ctx.fill(); ctx.stroke();
+        const ribbonWave = Math.sin(time * 12 + 1) * 3;
+        ctx.beginPath();
+        ctx.moveTo(16, -17);
+        ctx.lineTo(24, -14 + ribbonWave);
+        ctx.lineTo(22, -19 + ribbonWave);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Front Arm & Fist Gauntlet
+        ctx.save();
+        ctx.translate(-10, 4.5);
+        ctx.rotate(-armAngle);
+        ctx.fillStyle = "#F8FAFC";
+        ctx.beginPath();
+        ctx.roundRect(-13, -3.2, 13, 6.8, 3.5);
+        ctx.fill(); ctx.stroke();
+        // Blue Battle Glove
+        ctx.fillStyle = "#3B82F6";
+        ctx.beginPath();
+        ctx.arc(-13, 0, 4.2, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      }
+
+      // Anime-Style Expressive Eyes & Mouth
+      ctx.strokeStyle = "#1E293B";
+      ctx.fillStyle = "#1E293B";
+      ctx.lineWidth = 2;
+      if (state === 'squashed' || state === 'drowning') {
+        [-6.5, 6.5].forEach(ex => {
+          ctx.beginPath();
+          ctx.moveTo(ex - 2.8, -13); ctx.lineTo(ex + 2.8, -7.5);
+          ctx.moveTo(ex + 2.8, -13); ctx.lineTo(ex - 2.8, -7.5);
+          ctx.stroke();
+        });
+      } else {
+        // Large Hero Eyes with Dual Catchlights
+        [-6.5, 6.5].forEach(ex => {
+          ctx.fillStyle = "#1E293B";
+          ctx.beginPath();
+          ctx.ellipse(ex, -10.5, 2.8, 3.4, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#FFFFFF";
+          ctx.beginPath();
+          ctx.arc(ex - 0.9, -11.6, 1.15, 0, Math.PI * 2);
+          ctx.arc(ex + 0.8, -9.4, 0.55, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Determined Eyebrows when pulling/pushing
+        if (state === 'pulling' || state === 'pushing') {
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(-9.5, -15.5); ctx.lineTo(-4, -14);
+          ctx.moveTo(9.5, -15.5); ctx.lineTo(4, -14);
+          ctx.stroke();
+
+          // Effort Sweat Drop
+          ctx.fillStyle = "#38BDF8";
+          ctx.beginPath();
+          ctx.arc(type === 'bear' ? -13 : 13, -13 + Math.sin(time * 10) * 1.5, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Rosy Cheeks
+        ctx.fillStyle = "rgba(244, 63, 94, 0.48)";
+        ctx.beginPath();
+        ctx.arc(-10, -6.5, 3.4, 0, Math.PI * 2);
+        ctx.arc(10, -6.5, 3.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+
+      // Spinning Dizzy Stars overhead when squashed
+      if (state === 'squashed') {
+        for (let s = 0; s < 3; s++) {
+          const ang = time * 4.5 + (s * Math.PI * 2) / 3;
+          const sx = x + Math.cos(ang) * 24;
+          const sy = y - 22 + Math.sin(ang) * 6;
+          ctx.font = "16px sans-serif";
+          ctx.fillText("⭐", sx, sy);
+        }
+      }
+    }
+
+    function renderCanvas() {
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Apply Camera Shake Transform
+      if (cameraShake > 0.2) {
+        const dx = (Math.random() - 0.5) * cameraShake;
+        const dy = (Math.random() - 0.5) * cameraShake;
+        ctx.translate(dx, dy);
+        cameraShake *= 0.86;
+      } else {
+        cameraShake = 0;
+      }
+
+      // Lerp smooth score
+      smoothScore += (gameState.score - smoothScore) * 0.09;
+
+      const width = canvas.width;
+      const height = canvas.height;
+
+      if (gameState.mode === 'tug') {
+        renderTugOfWar(width, height);
+      } else if (gameState.mode === 'boulder') {
+        renderBoulderPush(width, height);
+      } else if (gameState.mode === 'cake') {
+        renderCakeCannon(width, height);
+      }
+
+      updateAndDrawVFX();
+      ctx.restore();
+
+      requestAnimationFrame(renderCanvas);
+    }
+
+    /* --- MODE 1: TUG OF WAR (河畔拔河) --- */
+    function renderTugOfWar(w, h) {
+      const time = Date.now() * 0.002;
+      const riverWidth = w * 0.24;
+      const riverX = w / 2 - riverWidth / 2;
+
+      // Multi-layer Parallax Sky & Hills
+      drawParallaxBackdrop(w, h, 'tug');
+
+      // Left Bank (Red Turf) & Right Bank (Blue Turf)
+      const turfGrad = ctx.createLinearGradient(0, h * 0.45, 0, h);
+      turfGrad.addColorStop(0, "#4ADE80");
+      turfGrad.addColorStop(0.25, "#22C55E");
+      turfGrad.addColorStop(1, "#15803D");
+      ctx.fillStyle = turfGrad;
+      ctx.fillRect(0, h * 0.45, riverX, h * 0.55);
+      ctx.fillRect(riverX + riverWidth, h * 0.45, riverX, h * 0.55);
+
+      // Lush Grass Rim & Shore Pebbles
+      ctx.fillStyle = "#86EFAC";
+      ctx.fillRect(0, h * 0.45, riverX, 6);
+      ctx.fillRect(riverX + riverWidth, h * 0.45, riverX, 6);
+
+      // River Water
+      const waterGrad = ctx.createLinearGradient(0, h * 0.48, 0, h);
+      waterGrad.addColorStop(0, "#38BDF8");
+      waterGrad.addColorStop(0.5, "#0EA5E9");
+      waterGrad.addColorStop(1, "#0369A1");
+      ctx.fillStyle = waterGrad;
+      ctx.fillRect(riverX, h * 0.48, riverWidth, h * 0.52);
+
+      // Animated Wave Ripples & Specular Glints
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.65)";
+      ctx.lineWidth = 2;
+      for (let y = h * 0.54; y < h; y += 16) {
+        const waveX = riverX + 10 + Math.sin(time * 2.5 + y) * 6;
+        ctx.beginPath();
+        ctx.moveTo(waveX, y);
+        ctx.lineTo(waveX + riverWidth - 20, y);
+        ctx.stroke();
+      }
+
+      // Animated Water Creatures
+      waterItems.forEach(item => {
+        item.x += item.speed;
+        if (item.x < riverX + 12 || item.x > riverX + riverWidth - 12) item.speed *= -1;
+        ctx.font = "16px sans-serif";
+        ctx.fillText(item.type === 'duck' ? '🦆' : '🐟', item.x, (h * 0.85) + Math.sin(time * 3) * 3);
+      });
+
+      // Rope Shift: Negative smoothScore = Left Red pulls LEFT (clamped so winning team stays comfortably on screen)
+      const maxOffset = w * 0.14;
+      const ropeShift = (smoothScore / gameState.maxScore) * maxOffset;
+      const ropeY = h * 0.52;
+
+      // Draw Twisted Rope with Shadow
+      ctx.strokeStyle = "rgba(0,0,0,0.18)";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.08, ropeY + 4);
+      ctx.lineTo(w * 0.92, ropeY + 4);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#78350F";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.08, ropeY);
+      ctx.lineTo(w * 0.92, ropeY);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#FBBF24";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(w * 0.08, ropeY);
+      ctx.lineTo(w * 0.92, ropeY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Red Center Flag on Rope
+      const ribbonX = w / 2 + ropeShift;
+      ctx.fillStyle = "#EF4444";
+      ctx.beginPath();
+      ctx.moveTo(ribbonX, ropeY);
+      ctx.lineTo(ribbonX - 8, ropeY + 18);
+      ctx.lineTo(ribbonX + 8, ropeY + 18);
+      ctx.closePath();
+      ctx.fill();
+
+      // Win Condition Triggers
+      const isRedWin = gameState.winnerSide === 'left' || smoothScore <= -gameState.maxScore;
+      const isBlueWin = gameState.winnerSide === 'right' || smoothScore >= gameState.maxScore;
+
+      // LEFT TEAM (RED BEAR)
+      const leftBaseX = Math.max(85, w * 0.27 + ropeShift);
+      if (isBlueWin) {
+        drawCharacter(ctx, 'bear', w / 2 - 18, h * 0.65, 'drowning', time);
+        drawCharacter(ctx, 'bear', w / 2 + 16, h * 0.68, 'drowning', time + 0.7);
+        ctx.fillStyle = "rgba(56, 189, 248, 0.58)";
+        ctx.fillRect(riverX, h * 0.66, riverWidth, h * 0.34);
+        ctx.font = "26px sans-serif";
+        ctx.fillText("💦", w / 2 - 18, h * 0.45 + Math.sin(time * 8) * 4);
+        ctx.fillText("🛟", w / 2 - 34, h * 0.78);
+      } else {
+        const redState = isRedWin ? 'celebrate' : 'pulling';
+        drawCharacter(ctx, 'bear', leftBaseX - 52, ropeY + 2, redState, time);
+        drawCharacter(ctx, 'bear', leftBaseX - 14, ropeY + 2, redState, time + 0.5);
+      }
+
+      // RIGHT TEAM (BLUE BUNNY)
+      const rightBaseX = Math.min(w - 85, w * 0.73 + ropeShift);
+      if (isRedWin) {
+        drawCharacter(ctx, 'bunny', w / 2 + 18, h * 0.65, 'drowning', time);
+        drawCharacter(ctx, 'bunny', w / 2 - 16, h * 0.68, 'drowning', time + 0.7);
+        ctx.fillStyle = "rgba(56, 189, 248, 0.58)";
+        ctx.fillRect(riverX, h * 0.66, riverWidth, h * 0.34);
+        ctx.font = "26px sans-serif";
+        ctx.fillText("💦", w / 2 + 16, h * 0.45 + Math.sin(time * 8) * 4);
+        ctx.fillText("🛟", w / 2 + 32, h * 0.78);
+      } else {
+        const blueState = isBlueWin ? 'celebrate' : 'pulling';
+        drawCharacter(ctx, 'bunny', rightBaseX + 14, ropeY + 2, blueState, time);
+        drawCharacter(ctx, 'bunny', rightBaseX + 52, ropeY + 2, blueState, time + 0.5);
+      }
+    }
+
+    /* --- MODE 2: BOULDER PUSH (巨石推推樂) --- */
+    function renderBoulderPush(w, h) {
+      const time = Date.now() * 0.002;
+
+      drawParallaxBackdrop(w, h, 'boulder');
+
+      // Cobblestone Ground
+      const groundGrad = ctx.createLinearGradient(0, h * 0.74, 0, h);
+      groundGrad.addColorStop(0, "#84CC16");
+      groundGrad.addColorStop(1, "#4D7C0F");
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(0, h * 0.74, w, h * 0.26);
+
+      const maxOffset = w * 0.32;
+      const boulderX = w / 2 - (smoothScore / gameState.maxScore) * maxOffset;
+      const boulderRadius = Math.min(38, h * 0.22);
+      const boulderY = h * 0.74 - boulderRadius;
+
+      const isRedWin = gameState.winnerSide === 'left' || smoothScore <= -gameState.maxScore;
+      const isBlueWin = gameState.winnerSide === 'right' || smoothScore >= gameState.maxScore;
+
+      // LEFT TEAM (RED)
+      if (isBlueWin) {
+        drawCharacter(ctx, 'bear', w * 0.16, h * 0.72, 'squashed', time);
+      } else {
+        const redState = isRedWin ? 'celebrate' : 'pushing';
+        drawCharacter(ctx, 'bear', boulderX - boulderRadius - 22, h * 0.59, redState, time);
+        drawCharacter(ctx, 'bear', boulderX - boulderRadius - 62, h * 0.59, redState, time + 0.4);
+      }
+
+      // RIGHT TEAM (BLUE)
+      if (isRedWin) {
+        drawCharacter(ctx, 'bunny', w * 0.84, h * 0.72, 'squashed', time);
+      } else {
+        const blueState = isBlueWin ? 'celebrate' : 'pushing';
+        drawCharacter(ctx, 'bunny', boulderX + boulderRadius + 22, h * 0.59, blueState, time);
+        drawCharacter(ctx, 'bunny', boulderX + boulderRadius + 62, h * 0.59, blueState, time + 0.4);
+      }
+
+      // Rolling Carved Stone Boulder with Ground Shadow
+      ctx.fillStyle = "rgba(0,0,0,0.2)";
+      ctx.beginPath();
+      ctx.ellipse(boulderX, h * 0.75, boulderRadius * 0.9, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(boulderX, boulderY);
+      const rollAngle = (boulderX - w / 2) / 22;
+      ctx.rotate(rollAngle);
+
+      const rockGrad = ctx.createRadialGradient(-8, -8, 4, 0, 0, boulderRadius);
+      rockGrad.addColorStop(0, "#E2E8F0");
+      rockGrad.addColorStop(0.6, "#94A3B8");
+      rockGrad.addColorStop(1, "#475569");
+      ctx.fillStyle = rockGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, boulderRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Expressive Face on Boulder
+      ctx.fillStyle = "#1E293B";
+      ctx.beginPath();
+      ctx.arc(-8, -5, 3.2, 0, Math.PI * 2);
+      ctx.arc(8, -5, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#1E293B";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(0, 5, 6.5, 0, Math.PI);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    /* --- MODE 3: CAKE CANNON (奶油蛋糕大砲) --- */
+    function renderCakeCannon(w, h) {
+      const time = Date.now() * 0.002;
+
+      drawParallaxBackdrop(w, h, 'cake');
+
+      // Festive Floor
+      const floorGrad = ctx.createLinearGradient(0, h * 0.76, 0, h);
+      floorGrad.addColorStop(0, "#FDBA74");
+      floorGrad.addColorStop(1, "#EA580C");
+      ctx.fillStyle = floorGrad;
+      ctx.fillRect(0, h * 0.76, w, h * 0.24);
+
+      // Party Bunting Flags
+      const flagColors = ["#F43F5E", "#F59E0B", "#3B82F6", "#10B981"];
+      for (let x = 0, idx = 0; x < w; x += 28, idx++) {
+        ctx.fillStyle = flagColors[idx % flagColors.length];
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + 14, 16);
+        ctx.lineTo(x + 28, 0);
+        ctx.fill();
+      }
+
+      const maxOffset = w * 0.34;
+      const ammoShift = -(smoothScore / gameState.maxScore) * maxOffset;
+
+      const isRedWin = gameState.winnerSide === 'left' || smoothScore <= -gameState.maxScore;
+      const isBlueWin = gameState.winnerSide === 'right' || smoothScore >= gameState.maxScore;
+
+      // LEFT BASE (RED)
+      if (isBlueWin) {
+        ctx.font = "54px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⛄", w * 0.16, h * 0.72);
+        ctx.font = "24px sans-serif";
+        ctx.fillText("🍒", w * 0.16, h * 0.34);
+      } else {
+        drawCharacter(ctx, 'bear', w * 0.14, h * 0.61, isRedWin ? 'celebrate' : 'idle', time);
+      }
+
+      // RIGHT BASE (BLUE)
+      if (isRedWin) {
+        ctx.font = "54px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⛄", w * 0.84, h * 0.72);
+        ctx.font = "24px sans-serif";
+        ctx.fillText("🍒", w * 0.84, h * 0.34);
+      } else {
+        drawCharacter(ctx, 'bunny', w * 0.86, h * 0.61, isBlueWin ? 'celebrate' : 'idle', time);
+      }
+
+      // Parabolic Arc Cake Ammo with Frosting Trail
+      if (!isRedWin && !isBlueWin) {
+        ctx.font = "36px sans-serif";
+        ctx.textAlign = "center";
+        const cakeX = w / 2 + ammoShift;
+        const cakeArcY = (h * 0.5) - Math.sin(Math.abs(smoothScore / gameState.maxScore) * Math.PI) * 35;
+        ctx.fillText("🍰", cakeX, cakeArcY);
+      }
+    }
+
+    /* ==========================================================================
+       5. MODAL INTERACTION HANDLERS
+       ========================================================================== */
+    function selectGameMode(mode) {
+      gameState.mode = mode;
+      playSfx('click');
+
+      document.querySelectorAll('.mode-select-btn').forEach(btn => {
+        btn.className = "mode-select-btn p-2.5 rounded-2xl border-2 border-slate-200 bg-slate-50 text-slate-700 font-bold flex flex-col items-center gap-1 transition";
+      });
+
+      const activeBtn = document.getElementById(`mode-btn-${mode}`);
+      if (activeBtn) {
+        activeBtn.className = "mode-select-btn p-2.5 rounded-2xl border-2 border-amber-400 bg-amber-50 text-amber-900 font-bold flex flex-col items-center gap-1 transition";
+      }
+
+      const badge = document.getElementById('game-mode-badge');
+      if (mode === 'tug') badge.innerText = "🌊 河畔拔河模式";
+      else if (mode === 'boulder') badge.innerText = "🪨 巨石推推模式";
+      else if (mode === 'cake') badge.innerText = "🍰 蛋糕大砲模式";
+    }
+
+    function changeCategory() {
+      gameState.category = document.getElementById('select-category').value;
+      const catText = document.getElementById('select-category').options[document.getElementById('select-category').selectedIndex].text;
+      document.getElementById('word-category').innerText = `主題：${catText.split(' ')[1] || catText}`;
+    }
+
+    function openMenuModal() {
+      playSfx('click');
+      document.getElementById('modal-settings').classList.remove('hidden');
+    }
+    function closeMenuModal() {
+      playSfx('click');
+      document.getElementById('modal-settings').classList.add('hidden');
+    }
+
+    function openRulesModal() {
+      playSfx('click');
+      document.getElementById('modal-rules').classList.remove('hidden');
+    }
+    function closeRulesModal() {
+      playSfx('click');
+      document.getElementById('modal-rules').classList.add('hidden');
+    }
+
+    function openCustomVocabModal() {
+      playSfx('click');
+      document.getElementById('modal-custom').classList.remove('hidden');
+    }
+    function closeCustomVocabModal() {
+      playSfx('click');
+      document.getElementById('modal-custom').classList.add('hidden');
+    }
+
+    function openMenuModalFromEnd() {
+      document.getElementById('modal-gameover').classList.add('hidden');
+      openMenuModal();
+    }
+
+    function saveCustomVocab() {
+      playSfx('click');
+      const text = document.getElementById('custom-vocab-input').value.trim();
+      if (!text) return;
+
+      const lines = text.split('\n');
+      const parsed = [];
+
+      lines.forEach(line => {
+        const parts = line.split(',');
+        if (parts.length >= 2) {
+          parsed.push({
+            word: parts[0].trim(),
+            pos: parts[1] ? parts[1].trim() : "n.",
+            zh: parts[2] ? parts[2].trim() : (parts[1] ? parts[1].trim() : "自訂單字"),
+            unitTag: "自訂題庫"
+          });
+        }
+      });
+
+      if (parsed.length > 0) {
+        customVocabList = parsed;
+        includeCustomVocab = true;
+        updateHanlinSummaryBadge();
+        closeCustomVocabModal();
+      }
+    }
+
+    function applySettingsAndStart() {
+      playSfx('click');
+      gameState.difficulty = document.getElementById('select-difficulty').value;
+      gameState.maxScore = parseInt(document.getElementById('select-maxscore').value, 10);
+
+      closeMenuModal();
+      restartGame();
+    }
+
+    /* ==========================================================================
+       6. INITIALIZATION ON WINDOW LOAD
+       ========================================================================== */
+    window.onload = function() {
+      resizeCanvas();
+      renderHanlinSelector();
+      buildKeypads();
+      buildWordPool();
+      nextQuestion();
+      renderCanvas();
+    };
+  </script>
+</body>
+</html>
