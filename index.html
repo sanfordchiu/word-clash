@@ -223,11 +223,11 @@
         <canvas id="gameCanvas" class="w-full h-full block"></canvas>
       </div>
 
-      <!-- DUAL PLAYER INPUT PANELS (SPLIT LEFT & RIGHT) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+      <!-- DUAL PLAYER INPUT PANELS (SPLIT FAR LEFT & FAR RIGHT WITH CENTRAL BATTLE EMBLEM) -->
+      <div class="flex flex-col md:flex-row items-stretch justify-between gap-2">
         
-        <!-- RED TEAM (LEFT PLAYER) -->
-        <div id="panel-left" class="bg-white/90 backdrop-blur-md rounded-2xl p-2 border-2 border-red-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <!-- RED TEAM (LEFT PLAYER - COMPACT 35% WIDTH ON DESKTOP/SMARTBOARD) -->
+        <div id="panel-left" class="w-full md:w-[35%] bg-white/95 backdrop-blur-md rounded-2xl p-2 border-2 border-red-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
           
           <!-- Stun Overlay -->
           <div id="stun-left" class="hidden absolute inset-0 bg-red-950/75 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-white font-black animate-pulse">
@@ -248,7 +248,7 @@
 
           <!-- Answer Slots Display -->
           <div class="mb-1.5">
-            <div id="input-display-left" class="flex items-center justify-center gap-1 min-h-[36px] bg-red-50/80 border-2 border-red-300 rounded-xl p-1 text-base sm:text-lg font-bold font-fredoka text-red-700 tracking-wider">
+            <div id="input-display-left" class="flex items-center justify-center gap-1 min-h-[34px] bg-red-50/80 border-2 border-red-300 rounded-xl p-1 text-sm sm:text-base font-bold font-fredoka text-red-700 tracking-wider">
               <!-- Letters rendered dynamically -->
             </div>
           </div>
@@ -259,8 +259,13 @@
           </div>
         </div>
 
-        <!-- BLUE TEAM (RIGHT PLAYER) -->
-        <div id="panel-right" class="bg-white/90 backdrop-blur-md rounded-2xl p-2 border-2 border-blue-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <!-- CENTRAL STREET-FIGHTER STYLE FULL-BLEED CLASH ZONE -->
+        <div class="hidden md:flex flex-1 flex-col items-center justify-center bg-slate-950 rounded-2xl border-2 border-amber-400 shadow-lg relative overflow-hidden">
+          <canvas id="centerClashCanvas" class="w-full h-full block"></canvas>
+        </div>
+
+        <!-- BLUE TEAM (RIGHT PLAYER - COMPACT 35% WIDTH ON DESKTOP/SMARTBOARD) -->
+        <div id="panel-right" class="w-full md:w-[35%] bg-white/95 backdrop-blur-md rounded-2xl p-2 border-2 border-blue-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
           
           <!-- Stun Overlay -->
           <div id="stun-right" class="hidden absolute inset-0 bg-blue-950/75 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-white font-black animate-pulse">
@@ -281,7 +286,7 @@
 
           <!-- Answer Slots Display -->
           <div class="mb-1.5">
-            <div id="input-display-right" class="flex items-center justify-center gap-1 min-h-[36px] bg-blue-50/80 border-2 border-blue-300 rounded-xl p-1 text-base sm:text-lg font-bold font-fredoka text-blue-700 tracking-wider">
+            <div id="input-display-right" class="flex items-center justify-center gap-1 min-h-[34px] bg-blue-50/80 border-2 border-blue-300 rounded-xl p-1 text-sm sm:text-base font-bold font-fredoka text-blue-700 tracking-wider">
               <!-- Letters rendered dynamically -->
             </div>
           </div>
@@ -1988,15 +1993,26 @@
         if (!container) return;
         container.innerHTML = "";
 
-        // Create Backspace / Long-Press Clear Button
+        // Create A-Z Letter Keys first (Intuitive QWERTY/Alphabetical order)
+        letters.forEach(letter => {
+          const btn = document.createElement('button');
+          btn.type = "button";
+          btn.innerText = letter;
+          btn.className = "key-btn bg-white hover:bg-slate-50 text-slate-800 font-fredoka font-bold text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg select-none";
+          bindMultiTouchKey(btn, () => handleLetterClick(side, letter));
+          container.appendChild(btn);
+        });
+
+        // Create Backspace / Long-Press Clear Button (Bottom-Right slot 27)
         const clearBtn = document.createElement('button');
         clearBtn.type = "button";
         clearBtn.innerHTML = '<i class="fa-solid fa-delete-left"></i> 退格';
         clearBtn.title = "點一下刪除一字；長按整排清空";
-        clearBtn.className = "key-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[11px] sm:text-xs py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-0.5";
+        clearBtn.className = "key-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[10px] sm:text-xs py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-0.5";
         bindMultiTouchKey(clearBtn, () => backspaceInput(side), () => clearInput(side));
+        container.appendChild(clearBtn);
 
-        // Create Submit Button
+        // Create Submit Button at intuitive Bottom-Right slot 28 for BOTH sides
         const submitBtn = document.createElement('button');
         submitBtn.type = "button";
         submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 送出';
@@ -2004,32 +2020,7 @@
           ? "key-btn-red-submit bg-gradient-to-b from-red-500 to-red-600 text-white font-black text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-1"
           : "key-btn-blue-submit bg-gradient-to-b from-blue-500 to-blue-600 text-white font-black text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-1";
         bindMultiTouchKey(submitBtn, () => submitAnswer(side));
-
-        if (side === 'left') {
-          // Left Player: Place Submit at the very first slot (far left edge) to prevent opponent interference
-          container.appendChild(submitBtn);
-          letters.forEach(letter => {
-            const btn = document.createElement('button');
-            btn.type = "button";
-            btn.innerText = letter;
-            btn.className = "key-btn bg-white hover:bg-slate-50 text-slate-800 font-fredoka font-bold text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg select-none";
-            bindMultiTouchKey(btn, () => handleLetterClick(side, letter));
-            container.appendChild(btn);
-          });
-          container.appendChild(clearBtn);
-        } else {
-          // Right Player: Keep Submit at the very last slot (far right edge)
-          letters.forEach(letter => {
-            const btn = document.createElement('button');
-            btn.type = "button";
-            btn.innerText = letter;
-            btn.className = "key-btn bg-white hover:bg-slate-50 text-slate-800 font-fredoka font-bold text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg select-none";
-            bindMultiTouchKey(btn, () => handleLetterClick(side, letter));
-            container.appendChild(btn);
-          });
-          container.appendChild(clearBtn);
-          container.appendChild(submitBtn);
-        }
+        container.appendChild(submitBtn);
       });
     }
 
@@ -2389,7 +2380,8 @@
        ========================================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
+    const clashCanvas = document.getElementById('centerClashCanvas');
+    const clashCtx = clashCanvas ? clashCanvas.getContext('2d') : null;
     let smoothScore = 0;
     let particles = [];
     let shockwaves = [];
@@ -2601,6 +2593,10 @@
       waterItems.forEach((item, idx) => {
         item.x = canvas.width / 2 + (idx === 0 ? -12 : 12);
       });
+      if (clashCanvas && clashCanvas.parentElement) {
+        clashCanvas.width = clashCanvas.parentElement.clientWidth;
+        clashCanvas.height = clashCanvas.parentElement.clientHeight;
+      }
     }
     window.addEventListener('resize', resizeCanvas);
 
@@ -3068,7 +3064,355 @@
       updateAndDrawVFX();
       ctx.restore();
 
+      renderCenterClashEmblem();
+
       requestAnimationFrame(renderCanvas);
+    }
+
+    /* --- STREET FIGHTER STYLE FULL-BLEED CLASH ART BETWEEN KEYPADS --- */
+    function renderCenterClashEmblem() {
+      if (!clashCtx || !clashCanvas || clashCanvas.width === 0) return;
+      const w = clashCanvas.width;
+      const h = clashCanvas.height;
+      const time = Date.now() * 0.004;
+
+      clashCtx.clearRect(0, 0, w, h);
+
+      // Dynamic diagonal slash split shifts slightly with score momentum
+      const shift = -(smoothScore / gameState.maxScore) * (w * 0.14);
+      const topSplit = w * 0.56 + shift;
+      const botSplit = w * 0.44 + shift;
+
+      // 1. LEFT SIDE (CRIMSON STREET FIGHTER BACKDROP + COMIC SPEED LINES)
+      clashCtx.save();
+      clashCtx.beginPath();
+      clashCtx.moveTo(0, 0);
+      clashCtx.lineTo(topSplit, 0);
+      clashCtx.lineTo(botSplit, h);
+      clashCtx.lineTo(0, h);
+      clashCtx.closePath();
+      clashCtx.clip();
+
+      const redBg = clashCtx.createLinearGradient(0, 0, w * 0.6, h);
+      redBg.addColorStop(0, "#450A0A");
+      redBg.addColorStop(0.5, "#B91C1C");
+      redBg.addColorStop(1, "#F97316");
+      clashCtx.fillStyle = redBg;
+      clashCtx.fillRect(0, 0, w, h);
+
+      // Diagonal manga speed lines (Red side)
+      clashCtx.strokeStyle = "rgba(254, 240, 138, 0.25)";
+      clashCtx.lineWidth = 2;
+      for (let i = -h; i < w; i += 14) {
+        const offset = (time * 80) % 14;
+        clashCtx.beginPath();
+        clashCtx.moveTo(i + offset, 0);
+        clashCtx.lineTo(i + offset - 35, h);
+        clashCtx.stroke();
+      }
+
+      // Giant Full-Bleed Red Fighter Bear Portrait (Right-facing)
+      const bearShakeX = Math.sin(time * 7) * 1.5;
+      const bearShakeY = Math.abs(Math.cos(time * 5)) * 2.5;
+      clashCtx.save();
+      clashCtx.translate(w * 0.23 + shift * 0.35 + bearShakeX, h * 0.66 - bearShakeY);
+      clashCtx.scale(1.65, 1.65);
+
+      // Fiery Aura behind Bear
+      const fireAura = clashCtx.createRadialGradient(0, -10, 5, 0, -10, 42);
+      fireAura.addColorStop(0, "rgba(253, 224, 71, 0.85)");
+      fireAura.addColorStop(0.6, "rgba(239, 68, 68, 0.45)");
+      fireAura.addColorStop(1, "rgba(239, 68, 68, 0)");
+      clashCtx.fillStyle = fireAura;
+      clashCtx.beginPath();
+      clashCtx.arc(0, -10, 42, 0, Math.PI * 2);
+      clashCtx.fill();
+
+      // Bear Ears & Volumetric Head
+      clashCtx.lineWidth = 2;
+      clashCtx.strokeStyle = "#1E293B";
+      [-15, 15].forEach(ex => {
+        clashCtx.fillStyle = "#B45309";
+        clashCtx.beginPath();
+        clashCtx.arc(ex, -25, 7.5, 0, Math.PI * 2);
+        clashCtx.fill();
+        clashCtx.stroke();
+      });
+
+      const bearHead = clashCtx.createRadialGradient(-5, -18, 2, 0, -12, 22);
+      bearHead.addColorStop(0, "#FDE68A");
+      bearHead.addColorStop(0.5, "#D97706");
+      bearHead.addColorStop(1, "#78350F");
+      clashCtx.fillStyle = bearHead;
+      clashCtx.beginPath();
+      clashCtx.arc(0, -12, 20, 0, Math.PI * 2);
+      clashCtx.fill();
+      clashCtx.stroke();
+
+      // Ryu-style Crimson Headband & Flowing Tails
+      clashCtx.fillStyle = "#EF4444";
+      clashCtx.beginPath();
+      clashCtx.roundRect(-20, -22, 40, 6, 2);
+      clashCtx.fill();
+      clashCtx.stroke();
+      const tailWave = Math.sin(time * 9) * 4;
+      clashCtx.beginPath();
+      clashCtx.moveTo(-19, -19);
+      clashCtx.lineTo(-34, -14 + tailWave);
+      clashCtx.lineTo(-30, -23 + tailWave);
+      clashCtx.closePath();
+      clashCtx.fill();
+      clashCtx.stroke();
+
+      // Fierce Street Fighter Eyes & Roaring Mouth
+      clashCtx.fillStyle = "#FFFFFF";
+      clashCtx.beginPath();
+      clashCtx.moveTo(2, -14); clashCtx.lineTo(13, -16); clashCtx.lineTo(11, -10); clashCtx.lineTo(3, -10);
+      clashCtx.closePath();
+      clashCtx.fill();
+      clashCtx.fillStyle = "#EF4444";
+      clashCtx.beginPath();
+      clashCtx.arc(9, -13, 2, 0, Math.PI * 2);
+      clashCtx.fill();
+
+      // Thick Determined Eyebrow
+      clashCtx.strokeStyle = "#1E293B";
+      clashCtx.lineWidth = 3;
+      clashCtx.beginPath();
+      clashCtx.moveTo(1, -17); clashCtx.lineTo(14, -13);
+      clashCtx.stroke();
+
+      // Snout & Battle Grin
+      clashCtx.fillStyle = "#FEF3C7";
+      clashCtx.beginPath();
+      clashCtx.ellipse(6, -5, 9, 6.5, 0, 0, Math.PI * 2);
+      clashCtx.fill();
+      clashCtx.fillStyle = "#1E293B";
+      clashCtx.beginPath();
+      clashCtx.arc(11, -7, 2.5, 0, Math.PI * 2);
+      clashCtx.fill();
+      clashCtx.beginPath();
+      clashCtx.moveTo(3, -3); clashCtx.lineTo(12, -2); clashCtx.lineTo(9, 1);
+      clashCtx.closePath();
+      clashCtx.fill();
+
+      // Massive Glowing Power Fist Thrust Forward
+      const fistX = 16 + Math.sin(time * 8) * 3;
+      const fistGrad = clashCtx.createRadialGradient(fistX - 3, 4, 2, fistX, 6, 13);
+      fistGrad.addColorStop(0, "#FCA5A5");
+      fistGrad.addColorStop(0.5, "#DC2626");
+      fistGrad.addColorStop(1, "#7F1D1D");
+      clashCtx.fillStyle = fistGrad;
+      clashCtx.lineWidth = 2.2;
+      clashCtx.beginPath();
+      clashCtx.arc(fistX, 6, 11.5, 0, Math.PI * 2);
+      clashCtx.fill();
+      clashCtx.stroke();
+      clashCtx.restore();
+      clashCtx.restore();
+
+      // 2. RIGHT SIDE (ELECTRIC COBALT STREET FIGHTER BACKDROP + COMIC SPEED LINES)
+      clashCtx.save();
+      clashCtx.beginPath();
+      clashCtx.moveTo(topSplit, 0);
+      clashCtx.lineTo(w, 0);
+      clashCtx.lineTo(w, h);
+      clashCtx.lineTo(botSplit, h);
+      clashCtx.closePath();
+      clashCtx.clip();
+
+      const blueBg = clashCtx.createLinearGradient(w * 0.4, 0, w, h);
+      blueBg.addColorStop(0, "#0284C7");
+      blueBg.addColorStop(0.5, "#1D4ED8");
+      blueBg.addColorStop(1, "#172554");
+      clashCtx.fillStyle = blueBg;
+      clashCtx.fillRect(0, 0, w, h);
+
+      // Diagonal manga speed lines (Blue side)
+      clashCtx.strokeStyle = "rgba(125, 211, 252, 0.28)";
+      clashCtx.lineWidth = 2;
+      for (let i = 0; i < w + h; i += 14) {
+        const offset = (time * 80) % 14;
+        clashCtx.beginPath();
+        clashCtx.moveTo(i - offset, 0);
+        clashCtx.lineTo(i - offset - 35, h);
+        clashCtx.stroke();
+      }
+
+      // Giant Full-Bleed Blue Fighter Bunny Portrait (Left-facing)
+      const bunnyShakeX = Math.cos(time * 7) * 1.5;
+      const bunnyShakeY = Math.abs(Math.sin(time * 5)) * 2.5;
+      clashCtx.save();
+      clashCtx.translate(w * 0.77 + shift * 0.35 + bunnyShakeX, h * 0.66 - bunnyShakeY);
+      clashCtx.scale(1.65, 1.65);
+
+      // Electric Aura behind Bunny
+      const elecAura = clashCtx.createRadialGradient(0, -10, 5, 0, -10, 42);
+      elecAura.addColorStop(0, "rgba(125, 211, 252, 0.9)");
+      elecAura.addColorStop(0.6, "rgba(37, 99, 235, 0.45)");
+      elecAura.addColorStop(1, "rgba(37, 99, 235, 0)");
+      clashCtx.fillStyle = elecAura;
+      clashCtx.beginPath();
+      clashCtx.arc(0, -10, 42, 0, Math.PI * 2);
+      clashCtx.fill();
+
+      // Long Swept-Back Fighter Bunny Ears
+      clashCtx.lineWidth = 2;
+      clashCtx.strokeStyle = "#1E293B";
+      [
+        { x: 6, y: -34, rot: 0.35 },
+        { x: 14, y: -31, rot: 0.55 }
+      ].forEach(ear => {
+        clashCtx.save();
+        clashCtx.translate(ear.x, ear.y);
+        clashCtx.rotate(ear.rot);
+        clashCtx.fillStyle = "#F8FAFC";
+        clashCtx.beginPath();
+        clashCtx.ellipse(0, 0, 5.5, 15, 0, 0, Math.PI * 2);
+        clashCtx.fill();
+        clashCtx.stroke();
+        clashCtx.fillStyle = "#FB7185";
+        clashCtx.beginPath();
+        clashCtx.ellipse(0, 0, 2.5, 10, 0, 0, Math.PI * 2);
+        clashCtx.fill();
+        clashCtx.restore();
+      });
+
+      // Volumetric Bunny Head
+      const bunnyHead = clashCtx.createRadialGradient(5, -18, 2, 0, -12, 22);
+      bunnyHead.addColorStop(0, "#FFFFFF");
+      bunnyHead.addColorStop(0.65, "#E2E8F0");
+      bunnyHead.addColorStop(1, "#94A3B8");
+      clashCtx.fillStyle = bunnyHead;
+      clashCtx.beginPath();
+      clashCtx.arc(0, -12, 20, 0, Math.PI * 2);
+      clashCtx.fill();
+      clashCtx.stroke();
+
+      // Cyber-Blue Headband & Flowing Tails
+      clashCtx.fillStyle = "#2563EB";
+      clashCtx.beginPath();
+      clashCtx.roundRect(-20, -22, 40, 6, 2);
+      clashCtx.fill();
+      clashCtx.stroke();
+      const blueTail = Math.cos(time * 9) * 4;
+      clashCtx.beginPath();
+      clashCtx.moveTo(19, -19);
+      clashCtx.lineTo(34, -14 + blueTail);
+      clashCtx.lineTo(30, -23 + blueTail);
+      clashCtx.closePath();
+      clashCtx.fill();
+      clashCtx.stroke();
+
+      // Fierce Left-Facing Street Fighter Eyes
+      clashCtx.fillStyle = "#FFFFFF";
+      clashCtx.beginPath();
+      clashCtx.moveTo(-2, -14); clashCtx.lineTo(-13, -16); clashCtx.lineTo(-11, -10); clashCtx.lineTo(-3, -10);
+      clashCtx.closePath();
+      clashCtx.fill();
+      clashCtx.fillStyle = "#0284C7";
+      clashCtx.beginPath();
+      clashCtx.arc(-9, -13, 2, 0, Math.PI * 2);
+      clashCtx.fill();
+
+      // Determined Eyebrow & Smirk
+      clashCtx.strokeStyle = "#1E293B";
+      clashCtx.lineWidth = 3;
+      clashCtx.beginPath();
+      clashCtx.moveTo(-1, -17); clashCtx.lineTo(-14, -13);
+      clashCtx.stroke();
+
+      clashCtx.fillStyle = "#FB7185";
+      clashCtx.beginPath();
+      clashCtx.arc(-11, -7, 2.2, 0, Math.PI * 2);
+      clashCtx.fill();
+
+      clashCtx.lineWidth = 2;
+      clashCtx.beginPath();
+      clashCtx.moveTo(-11, -2); clashCtx.quadraticCurveTo(-6, 0, -2, -3);
+      clashCtx.stroke();
+
+      // Massive Glowing Lightning Fist Thrust Forward
+      const blueFistX = -16 - Math.sin(time * 8) * 3;
+      const blueFistGrad = clashCtx.createRadialGradient(blueFistX - 3, 4, 2, blueFistX, 6, 13);
+      blueFistGrad.addColorStop(0, "#BAE6FD");
+      blueFistGrad.addColorStop(0.5, "#2563EB");
+      blueFistGrad.addColorStop(1, "#1E3A8A");
+      clashCtx.fillStyle = blueFistGrad;
+      clashCtx.lineWidth = 2.2;
+      clashCtx.beginPath();
+      clashCtx.arc(blueFistX, 6, 11.5, 0, Math.PI * 2);
+      clashCtx.fill();
+      clashCtx.stroke();
+      clashCtx.restore();
+      clashCtx.restore();
+
+      // 3. JAGGED LIGHTNING SLASH DIVIDER LINE
+      clashCtx.save();
+      clashCtx.strokeStyle = "#FEF08A";
+      clashCtx.shadowColor = "#F59E0B";
+      clashCtx.shadowBlur = 14;
+      clashCtx.lineWidth = 4;
+      clashCtx.beginPath();
+      clashCtx.moveTo(topSplit, 0);
+      const midX = (topSplit + botSplit) / 2 + Math.sin(time * 25) * 4;
+      const midY = h * 0.5;
+      clashCtx.lineTo(midX - 6, midY - 12);
+      clashCtx.lineTo(midX + 6, midY + 12);
+      clashCtx.lineTo(botSplit, h);
+      clashCtx.stroke();
+      clashCtx.restore();
+
+      // 4. ARCADE STREET-FIGHTER "VS" EMBLEM IN CENTER
+      const pulse = 1 + Math.sin(time * 4) * 0.07;
+      clashCtx.save();
+      clashCtx.translate((topSplit + botSplit) / 2, h * 0.48);
+      clashCtx.scale(pulse, pulse);
+
+      // Outer Dark Rim & Fiery Ring
+      clashCtx.fillStyle = "#0F172A";
+      clashCtx.beginPath();
+      clashCtx.arc(0, 0, 26, 0, Math.PI * 2);
+      clashCtx.fill();
+
+      const ringGrad = clashCtx.createLinearGradient(-24, -24, 24, 24);
+      ringGrad.addColorStop(0, "#FACC15");
+      ringGrad.addColorStop(0.5, "#F97316");
+      ringGrad.addColorStop(1, "#DC2626");
+      clashCtx.strokeStyle = ringGrad;
+      clashCtx.lineWidth = 4;
+      clashCtx.stroke();
+
+      // Skewed Arcade Metallic "VS" Text
+      clashCtx.transform(1, -0.14, -0.18, 1, 0, 0);
+      clashCtx.font = "900 24px 'Fredoka', sans-serif";
+      clashCtx.textAlign = "center";
+      clashCtx.textBaseline = "middle";
+      clashCtx.lineWidth = 5;
+      clashCtx.strokeStyle = "#0F172A";
+      clashCtx.strokeText("VS", 0, 1);
+
+      const textGrad = clashCtx.createLinearGradient(0, -12, 0, 12);
+      textGrad.addColorStop(0, "#FFFFFF");
+      textGrad.addColorStop(0.5, "#FDE047");
+      textGrad.addColorStop(1, "#F97316");
+      clashCtx.fillStyle = textGrad;
+      clashCtx.fillText("VS", 0, 1);
+      clashCtx.restore();
+
+      // 5. TOP ARCADE FIGHTER NAMEPLATES
+      clashCtx.font = "900 10px 'Noto Sans TC', sans-serif";
+      clashCtx.fillStyle = "rgba(15, 23, 42, 0.75)";
+      clashCtx.fillRect(6, 6, 54, 16);
+      clashCtx.fillStyle = "#FCA5A5";
+      clashCtx.textAlign = "left";
+      clashCtx.fillText("P1 烈焰熊", 10, 17);
+
+      clashCtx.fillStyle = "rgba(15, 23, 42, 0.75)";
+      clashCtx.fillRect(w - 60, 6, 54, 16);
+      clashCtx.fillStyle = "#93C5FD";
+      clashCtx.textAlign = "right";
+      clashCtx.fillText("P2 閃電兔", w - 10, 17);
     }
 
     /* --- MODE 1: TUG OF WAR (河畔拔河) --- */
