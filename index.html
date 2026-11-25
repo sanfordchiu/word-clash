@@ -2396,6 +2396,11 @@
     let floatingTexts = [];
     let cameraShake = 0;
 
+    let waterItems = [
+      { x: 0, type: 'duck', speed: 0.45 },
+      { x: 0, type: 'fish', speed: -0.6 }
+    ];
+
     // Ambient floating pollen/light motes & background clouds
     let ambientMotes = Array.from({ length: 18 }, () => ({
       x: Math.random() * 1000,
@@ -2500,104 +2505,87 @@
         p.x += p.vx;
         p.y += p.vy;
         p.vy += p.gravity;
-
+        if (p.y > canvas.height + 20) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
-
-        if (p.y > canvas.height + 20) {
-          particles.splice(i, 1);
-        }
+        ctx.restore();
       }
 
-      // 3. Floating Popups (+1, COMBO!)
+      // 3. Floating Popups
       for (let i = floatingTexts.length - 1; i >= 0; i--) {
         const ft = floatingTexts[i];
         ft.y += ft.vy;
         ft.alpha -= 0.022;
-        ft.scale += (1.0 - ft.scale) * 0.15;
         if (ft.alpha <= 0) {
           floatingTexts.splice(i, 1);
           continue;
         }
         ctx.save();
         ctx.globalAlpha = ft.alpha;
-        ctx.translate(ft.x, ft.y);
-        ctx.scale(ft.scale, ft.scale);
         ctx.font = "900 18px 'Fredoka', 'Noto Sans TC', sans-serif";
         ctx.textAlign = "center";
         ctx.lineWidth = 4;
         ctx.strokeStyle = "#FFFFFF";
-        ctx.strokeText(ft.text, 0, 0);
+        ctx.strokeText(ft.text, ft.x, ft.y);
         ctx.fillStyle = ft.color;
-        ctx.fillText(ft.text, 0, 0);
+        ctx.fillText(ft.text, ft.x, ft.y);
         ctx.restore();
       }
     }
 
-    let waterItems = [
-      { x: 300, type: 'duck', speed: 0.45 },
-      { x: 340, type: 'fish', speed: -0.65 }
-    ];
-
-    function resizeCanvas() {
-      const container = canvas.parentElement;
-      if (!container) return;
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-      waterItems[0].x = canvas.width / 2 - 15;
-      waterItems[1].x = canvas.width / 2 + 15;
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-
-    /* Multi-Layer Parallax Environment Backdrop */
-    function drawParallaxBackdrop(w, h, theme) {
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.78);
-      if (theme === 'tug') {
+    function drawParallaxBackdrop(w, h, mode) {
+      // Sky Gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.75);
+      if (mode === 'tug') {
         skyGrad.addColorStop(0, "#BAE6FD");
         skyGrad.addColorStop(1, "#F0F9FF");
-      } else if (theme === 'boulder') {
-        skyGrad.addColorStop(0, "#FDE68A");
-        skyGrad.addColorStop(1, "#FEF3C7");
+      } else if (mode === 'boulder') {
+        skyGrad.addColorStop(0, "#FEF3C7");
+        skyGrad.addColorStop(1, "#FFFBEB");
       } else {
-        skyGrad.addColorStop(0, "#FBCFE8");
-        skyGrad.addColorStop(1, "#FDF2F8");
+        skyGrad.addColorStop(0, "#FCE7F3");
+        skyGrad.addColorStop(1, "#FFF1F2");
       }
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, w, h);
 
       // Soft Drifting Clouds
-      ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
       bgClouds.forEach(c => {
         c.x += c.speed;
-        if (c.x > w + 70) c.x = -70;
+        if (c.x > w + 80) c.x = -80;
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.scale(c.scale, c.scale);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
         ctx.beginPath();
-        ctx.arc(c.x, c.y, 16 * c.scale, 0, Math.PI * 2);
-        ctx.arc(c.x + 14 * c.scale, c.y - 4 * c.scale, 20 * c.scale, 0, Math.PI * 2);
-        ctx.arc(c.x + 30 * c.scale, c.y, 15 * c.scale, 0, Math.PI * 2);
+        ctx.arc(0, 0, 16, 0, Math.PI * 2);
+        ctx.arc(14, -4, 20, 0, Math.PI * 2);
+        ctx.arc(30, 0, 15, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       });
 
       // Distant Rolling Hills
-      ctx.fillStyle = theme === 'tug' ? "rgba(134, 239, 172, 0.45)" : (theme === 'boulder' ? "rgba(253, 186, 116, 0.4)" : "rgba(244, 114, 182, 0.25)");
+      ctx.fillStyle = mode === 'tug' ? "#A7F3D0" : (mode === 'boulder' ? "#FDE68A" : "#FBCFE8");
       ctx.beginPath();
-      ctx.moveTo(0, h * 0.65);
-      ctx.quadraticCurveTo(w * 0.25, h * 0.28, w * 0.52, h * 0.62);
-      ctx.quadraticCurveTo(w * 0.78, h * 0.32, w, h * 0.6);
+      ctx.moveTo(0, h * 0.55);
+      ctx.quadraticCurveTo(w * 0.25, h * 0.34, w * 0.55, h * 0.52);
+      ctx.quadraticCurveTo(w * 0.8, h * 0.36, w, h * 0.5);
       ctx.lineTo(w, h);
       ctx.lineTo(0, h);
       ctx.closePath();
       ctx.fill();
 
-      // Ambient Floating Pollen / Light Motes
+      // Floating Ambient Motes
       ambientMotes.forEach(m => {
-        m.x += m.speedX;
-        m.y += m.speedY;
-        if (m.y < 0) { m.y = h * 0.75; m.x = Math.random() * w; }
-        if (m.x < 0) m.x = w;
-        if (m.x > w) m.x = 0;
+        m.x = (m.x + m.speedX + w) % w;
+        m.y = (m.y + m.speedY + h) % h;
         ctx.fillStyle = `rgba(255, 255, 255, ${m.alpha})`;
         ctx.beginPath();
         ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
@@ -2605,13 +2593,24 @@
       });
     }
 
-    /* Helper: Articulated 2D Game Hero Mascot (Larger Chibi Proportions, Cel-Shaded Outlines & Battle Gear) */
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      if (!container) return;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      waterItems.forEach((item, idx) => {
+        item.x = canvas.width / 2 + (idx === 0 ? -12 : 12);
+      });
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    /* Helper: 3D-Styled Mobile Game Hero Mascot (Larger Scale, Specular Rim Lighting, Ambient Occlusion & Dynamic Capes) */
     function drawCharacter(ctx, type, x, y, state, time) {
       ctx.save();
       ctx.translate(x, y);
 
-      // Scale up hero proportions by 1.38x so characters look bold & prominent on classroom big screens
-      const baseScale = 1.38;
+      // Bold 1.56x Mobile-Game Hero Scale
+      const baseScale = 1.56;
       let stretchX = baseScale;
       let stretchY = baseScale;
       let leanAngle = 0;
@@ -2619,8 +2618,8 @@
       let legStride = 0;
 
       if (state === 'squashed') {
-        stretchX = baseScale * 2.15;
-        stretchY = baseScale * 0.16;
+        stretchX = baseScale * 2.25;
+        stretchY = baseScale * 0.15;
         leanAngle = Math.sin(time * 6) * 0.05;
       } else if (state === 'drowning') {
         ctx.translate(0, Math.sin(time * 14) * 5);
@@ -2628,10 +2627,10 @@
         armAngle = Math.sin(time * 18) * 1.15;
       } else if (state === 'celebrate') {
         const cycle = Math.abs(Math.sin(time * 11));
-        const jump = cycle * 18;
+        const jump = cycle * 19;
         ctx.translate(0, -jump);
-        stretchY = baseScale * (1 + cycle * 0.15);
-        stretchX = baseScale * (1 - cycle * 0.08);
+        stretchY = baseScale * (1 + cycle * 0.16);
+        stretchX = baseScale * (1 - cycle * 0.09);
         armAngle = -2.25 + Math.sin(time * 16) * 0.25;
       } else if (state === 'pulling') {
         const effort = Math.sin(time * 9);
@@ -2648,264 +2647,380 @@
         legStride = effort * 6.5;
         armAngle = type === 'bear' ? -0.65 : 0.65;
       } else {
-        const bounce = Math.abs(Math.sin(time * 6)) * 3.5;
+        const bounce = Math.abs(Math.sin(time * 6)) * 3.8;
         ctx.translate(0, -bounce);
       }
 
-      // Ground Contact Shadow
+      // Soft Multi-Layer Ambient Ground Shadow
       if (state !== 'drowning') {
-        ctx.fillStyle = "rgba(15, 23, 42, 0.2)";
+        const shadowGrad = ctx.createRadialGradient(0, 26, 2, 0, 26, 28 * (state === 'squashed' ? 1.5 : 1));
+        shadowGrad.addColorStop(0, "rgba(15, 23, 42, 0.36)");
+        shadowGrad.addColorStop(1, "rgba(15, 23, 42, 0)");
+        ctx.fillStyle = shadowGrad;
         ctx.beginPath();
-        ctx.ellipse(0, 24, 24 * (state === 'squashed' ? 1.5 : 1), 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 26, 28 * (state === 'squashed' ? 1.5 : 1), 7.5, 0, 0, Math.PI * 2);
         ctx.fill();
       }
 
       ctx.scale(stretchX, stretchY);
       ctx.rotate(leanAngle);
 
-      // Cel-shaded dark outline setup
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
 
-      // Articulated Sneakers / Boots
-      if (state !== 'drowning') {
-        ctx.fillStyle = type === 'bear' ? "#7F1D1D" : "#1E3A8A";
+      // 1. Dynamic Flowing Hero Cape (Behind Torso)
+      if (state !== 'squashed' && state !== 'drowning') {
+        const capeWave = Math.sin(time * 10) * 3.5;
+        const capeDir = type === 'bear' ? -1 : 1;
+        const capeGrad = ctx.createLinearGradient(0, 0, capeDir * 22, 18);
+        if (type === 'bear') {
+          capeGrad.addColorStop(0, "#DC2626");
+          capeGrad.addColorStop(1, "#7F1D1D");
+        } else {
+          capeGrad.addColorStop(0, "#2563EB");
+          capeGrad.addColorStop(1, "#1E3A8A");
+        }
+        ctx.fillStyle = capeGrad;
         ctx.strokeStyle = "#1E293B";
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(capeDir * 6, 1);
+        ctx.quadraticCurveTo(capeDir * 22, 6 + capeWave, capeDir * 24, 17 + capeWave);
+        ctx.lineTo(capeDir * 8, 15);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // 2. 3D Sculpted Sneakers / Boots with Specular Shine
+      if (state !== 'drowning') {
         [-7.5 + legStride, 7.5 - legStride].forEach(lx => {
+          const bootGrad = ctx.createRadialGradient(lx - 2, 14, 1, lx, 16, 8);
+          if (type === 'bear') {
+            bootGrad.addColorStop(0, "#EF4444");
+            bootGrad.addColorStop(1, "#7F1D1D");
+          } else {
+            bootGrad.addColorStop(0, "#38BDF8");
+            bootGrad.addColorStop(1, "#1E3A8A");
+          }
+          ctx.fillStyle = bootGrad;
+          ctx.strokeStyle = "#1E293B";
+          ctx.lineWidth = 1.6;
           ctx.beginPath();
-          ctx.roundRect(lx - 6, 13, 12, 7.5, 4);
+          ctx.roundRect(lx - 6.5, 13, 13, 8, 4.5);
           ctx.fill();
           ctx.stroke();
-          // White shoe sole
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(lx - 5, 18.5, 10, 2);
-          ctx.fillStyle = type === 'bear' ? "#7F1D1D" : "#1E3A8A";
+          // Thick White Rubber Sole
+          ctx.fillStyle = "#F8FAFC";
+          ctx.fillRect(lx - 5.5, 18.8, 11, 2.2);
         });
       }
 
       if (type === 'bear') {
-        // --- RED TEAM HERO: FLAME WARRIOR BEAR ---
-        // Back Arm
+        // --- RED TEAM 3D HERO: FLAME WARRIOR BEAR ---
+        // Back Arm (3D Shaded)
         ctx.save();
-        ctx.translate(-8, 4);
+        ctx.translate(-9, 4);
         ctx.rotate(-armAngle * 0.6);
-        ctx.fillStyle = "#B45309";
+        const backArmGrad = ctx.createLinearGradient(-11, -3, -11, 4);
+        backArmGrad.addColorStop(0, "#D97706");
+        backArmGrad.addColorStop(1, "#78350F");
+        ctx.fillStyle = backArmGrad;
         ctx.strokeStyle = "#1E293B";
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.roundRect(-11, -3, 11, 6.5, 3.5);
+        ctx.roundRect(-11, -3.2, 11, 6.8, 3.5);
         ctx.fill(); ctx.stroke();
         ctx.restore();
 
-        // Battle Hoodie Torso with Gold Belt & Emblem
-        const torsoGrad = ctx.createLinearGradient(0, -2, 0, 16);
-        torsoGrad.addColorStop(0, "#FF4757");
-        torsoGrad.addColorStop(1, "#BE123C");
+        // 3D Volumetric Torso with Rim Light & Belly Armor
+        const torsoGrad = ctx.createRadialGradient(-5, 2, 2, 0, 7, 18);
+        torsoGrad.addColorStop(0, "#FF6B81");
+        torsoGrad.addColorStop(0.55, "#FF4757");
+        torsoGrad.addColorStop(1, "#991B1B");
         ctx.fillStyle = torsoGrad;
         ctx.strokeStyle = "#1E293B";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.roundRect(-14.5, -2, 29, 17.5, 8);
+        ctx.roundRect(-15, -2, 30, 18, 9);
         ctx.fill(); ctx.stroke();
 
-        // Gold Champion Belt & Star Buckle
-        ctx.fillStyle = "#FACC15";
-        ctx.fillRect(-14, 9, 28, 3.5);
+        // Chest Armor Plate Highlight
+        ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
         ctx.beginPath();
-        ctx.arc(0, 10.7, 3.2, 0, Math.PI * 2);
-        ctx.fill(); ctx.stroke();
-
-        // Bear Ears with Inner Gold
-        ctx.fillStyle = "#B45309";
-        ctx.beginPath();
-        ctx.arc(-13.5, -21, 6.5, 0, Math.PI * 2);
-        ctx.arc(13.5, -21, 6.5, 0, Math.PI * 2);
-        ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#FDE68A";
-        ctx.beginPath();
-        ctx.arc(-13.5, -21, 3.2, 0, Math.PI * 2);
-        ctx.arc(13.5, -21, 3.2, 0, Math.PI * 2);
+        ctx.ellipse(-4, 3, 6, 3.2, -0.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Bear Head (Chibi Hero Size)
-        const headGrad = ctx.createRadialGradient(-4, -15, 2, 0, -11, 18);
-        headGrad.addColorStop(0, "#FBBF24");
-        headGrad.addColorStop(1, "#D97706");
+        // Gold 3D Champion Belt & Glowing Star Buckle
+        ctx.fillStyle = "#FACC15";
+        ctx.fillRect(-14.5, 9, 29, 3.8);
+        const buckleGrad = ctx.createRadialGradient(-1, 10, 0.5, 0, 10.8, 3.8);
+        buckleGrad.addColorStop(0, "#FEF9C3");
+        buckleGrad.addColorStop(1, "#CA8A04");
+        ctx.fillStyle = buckleGrad;
+        ctx.beginPath();
+        ctx.arc(0, 10.8, 3.6, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+
+        // 3D Spherical Bear Ears with Recessed Inner Cup
+        [-14, 14].forEach(earX => {
+          const earGrad = ctx.createRadialGradient(earX - 2, -23, 1, earX, -21, 7.5);
+          earGrad.addColorStop(0, "#F59E0B");
+          earGrad.addColorStop(1, "#78350F");
+          ctx.fillStyle = earGrad;
+          ctx.beginPath();
+          ctx.arc(earX, -21.5, 7, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = "#FDE68A";
+          ctx.beginPath();
+          ctx.arc(earX, -21.5, 3.6, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 3D Volumetric Bear Head with Top-Left Specular Rim & Bottom AO Shadow
+        const headGrad = ctx.createRadialGradient(-5.5, -17, 2.5, 0, -11, 19);
+        headGrad.addColorStop(0, "#FDE68A");
+        headGrad.addColorStop(0.45, "#F59E0B");
+        headGrad.addColorStop(0.85, "#B45309");
+        headGrad.addColorStop(1, "#78350F");
         ctx.fillStyle = headGrad;
         ctx.beginPath();
-        ctx.arc(0, -11, 16.8, 0, Math.PI * 2);
+        ctx.arc(0, -11, 17.5, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
 
-        // Muzzle & Nose
-        ctx.fillStyle = "#FEF3C7";
+        // Soft Top-Left Fur Gloss Highlight
+        ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
         ctx.beginPath();
-        ctx.ellipse(0, -6.5, 8, 5.8, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#451A03";
-        ctx.beginPath();
-        ctx.arc(0, -8.5, 2.8, 0, Math.PI * 2);
+        ctx.ellipse(-6.5, -21.5, 5.5, 2.4, -0.45, 0, Math.PI * 2);
         ctx.fill();
 
-        // Crimson Warrior Headband & Flowing Tails
-        ctx.fillStyle = "#EF4444";
+        // 3D Snout / Muzzle & Glossy Nose
+        const muzzleGrad = ctx.createRadialGradient(-2, -8, 1, 0, -6.5, 9);
+        muzzleGrad.addColorStop(0, "#FFFFFF");
+        muzzleGrad.addColorStop(1, "#FDE68A");
+        ctx.fillStyle = muzzleGrad;
         ctx.beginPath();
-        ctx.roundRect(-16.5, -19.5, 33, 5, 2);
+        ctx.ellipse(0, -6.2, 8.5, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#292524";
+        ctx.beginPath();
+        ctx.ellipse(0, -8.6, 3.1, 2.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(-1, -9.2, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3D Crimson Warrior Headband & Flowing Tails
+        const bandGrad = ctx.createLinearGradient(0, -20, 0, -14);
+        bandGrad.addColorStop(0, "#F87171");
+        bandGrad.addColorStop(1, "#B91C1C");
+        ctx.fillStyle = bandGrad;
+        ctx.beginPath();
+        ctx.roundRect(-17.2, -19.8, 34.4, 5.2, 2.5);
         ctx.fill(); ctx.stroke();
-        // Flowing headband ribbon on left
-        const ribbonWave = Math.sin(time * 12) * 3;
+        const ribbonWave = Math.sin(time * 12) * 3.5;
         ctx.beginPath();
-        ctx.moveTo(-16, -17);
-        ctx.lineTo(-24, -14 + ribbonWave);
-        ctx.lineTo(-22, -19 + ribbonWave);
+        ctx.moveTo(-16.5, -17);
+        ctx.lineTo(-26, -13.5 + ribbonWave);
+        ctx.lineTo(-23.5, -19.5 + ribbonWave);
         ctx.closePath();
         ctx.fill(); ctx.stroke();
 
-        // Front Arm & Fist Gauntlet
+        // Front Arm & 3D Boxing/Battle Gauntlet
         ctx.save();
         ctx.translate(10, 4.5);
         ctx.rotate(armAngle);
         ctx.fillStyle = "#D97706";
         ctx.beginPath();
-        ctx.roundRect(0, -3.2, 13, 6.8, 3.5);
+        ctx.roundRect(0, -3.4, 13.5, 7, 3.5);
         ctx.fill(); ctx.stroke();
-        // Red Battle Glove
-        ctx.fillStyle = "#EF4444";
+
+        const gloveGrad = ctx.createRadialGradient(12, -1.5, 1, 13.5, 0, 5.2);
+        gloveGrad.addColorStop(0, "#FCA5A5");
+        gloveGrad.addColorStop(0.5, "#EF4444");
+        gloveGrad.addColorStop(1, "#7F1D1D");
+        ctx.fillStyle = gloveGrad;
         ctx.beginPath();
-        ctx.arc(13, 0, 4.2, 0, Math.PI * 2);
+        ctx.arc(13.5, 0, 4.8, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
         ctx.restore();
       } else {
-        // --- BLUE TEAM HERO: LIGHTNING STRIKER BUNNY ---
+        // --- BLUE TEAM 3D HERO: LIGHTNING STRIKER BUNNY ---
         // Back Arm
         ctx.save();
-        ctx.translate(8, 4);
+        ctx.translate(9, 4);
         ctx.rotate(armAngle * 0.6);
-        ctx.fillStyle = "#F8FAFC";
+        ctx.fillStyle = "#E2E8F0";
         ctx.strokeStyle = "#1E293B";
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.roundRect(0, -3, 11, 6.5, 3.5);
+        ctx.roundRect(0, -3.2, 11, 6.8, 3.5);
         ctx.fill(); ctx.stroke();
         ctx.restore();
 
-        // Cyber-Sport Jacket Torso
-        const torsoGrad = ctx.createLinearGradient(0, -2, 0, 16);
-        torsoGrad.addColorStop(0, "#38BDF8");
-        torsoGrad.addColorStop(1, "#1D4ED8");
+        // 3D Cyber-Sport Jacket Torso with Specular Shading
+        const torsoGrad = ctx.createRadialGradient(-5, 2, 2, 0, 7, 18);
+        torsoGrad.addColorStop(0, "#7DD3FC");
+        torsoGrad.addColorStop(0.55, "#0284C7");
+        torsoGrad.addColorStop(1, "#1E3A8A");
         ctx.fillStyle = torsoGrad;
         ctx.strokeStyle = "#1E293B";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.roundRect(-14.5, -2, 29, 17.5, 8);
+        ctx.roundRect(-15, -2, 30, 18, 9);
         ctx.fill(); ctx.stroke();
 
-        // White Zipper Stripe & Lightning Emblem
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(-2, -1.5, 4, 16.5);
-        ctx.fillStyle = "#FACC15";
+        // White Zipper & Glowing Gold Lightning Core
+        ctx.fillStyle = "#F8FAFC";
+        ctx.fillRect(-2, -1.5, 4, 17);
+        const coreGrad = ctx.createRadialGradient(-1, 6.5, 0.5, 0, 7.2, 4);
+        coreGrad.addColorStop(0, "#FEF9C3");
+        coreGrad.addColorStop(1, "#EAB308");
+        ctx.fillStyle = coreGrad;
         ctx.beginPath();
-        ctx.arc(0, 7, 3.5, 0, Math.PI * 2);
+        ctx.arc(0, 7.2, 3.8, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
 
-        // Long Expressive Bunny Ears
+        // 3D Sculpted Long Bunny Ears with Pink Inner Cushion
         const earSway = Math.sin(time * 8) * 0.09;
-        ctx.fillStyle = "#FFFFFF";
+        [-7.8, 7.8].forEach((earX, idx) => {
+          const tilt = idx === 0 ? -0.1 + earSway : 0.1 + earSway;
+          const earGrad = ctx.createLinearGradient(earX - 4, -40, earX + 4, -18);
+          earGrad.addColorStop(0, "#FFFFFF");
+          earGrad.addColorStop(1, "#CBD5E1");
+          ctx.fillStyle = earGrad;
+          ctx.beginPath();
+          ctx.ellipse(earX, -30, 5.6, 13.8, tilt, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+
+          const innerEarGrad = ctx.createLinearGradient(earX, -38, earX, -20);
+          innerEarGrad.addColorStop(0, "#FECDD3");
+          innerEarGrad.addColorStop(1, "#F43F5E");
+          ctx.fillStyle = innerEarGrad;
+          ctx.beginPath();
+          ctx.ellipse(earX, -30, 2.7, 9, tilt, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 3D Volumetric Bunny Head with Porcelain Gloss & Rim Shadow
+        const headGrad = ctx.createRadialGradient(-5.5, -17, 2.5, 0, -11, 19);
+        headGrad.addColorStop(0, "#FFFFFF");
+        headGrad.addColorStop(0.65, "#F1F5F9");
+        headGrad.addColorStop(1, "#94A3B8");
+        ctx.fillStyle = headGrad;
         ctx.beginPath();
-        ctx.ellipse(-7.5, -29, 5.2, 13, -0.1 + earSway, 0, Math.PI * 2);
-        ctx.fill(); ctx.stroke();
-        ctx.beginPath();
-        ctx.ellipse(7.5, -29, 5.2, 13, 0.1 + earSway, 0, Math.PI * 2);
+        ctx.arc(0, -11, 17.5, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
 
-        // Inner Pink Ears
-        ctx.fillStyle = "#FDA4AF";
+        // Top-Left Porcelain Specular Highlight
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
         ctx.beginPath();
-        ctx.ellipse(-7.5, -29, 2.4, 8.5, -0.1 + earSway, 0, Math.PI * 2);
-        ctx.ellipse(7.5, -29, 2.4, 8.5, 0.1 + earSway, 0, Math.PI * 2);
+        ctx.ellipse(-6.5, -21.5, 5.5, 2.4, -0.45, 0, Math.PI * 2);
         ctx.fill();
 
-        // Bunny Head (Chibi Hero Size)
-        ctx.fillStyle = "#FFFFFF";
+        // Cute Twitching Pink Nose
+        ctx.fillStyle = "#FB7185";
         ctx.beginPath();
-        ctx.arc(0, -11, 16.8, 0, Math.PI * 2);
-        ctx.fill(); ctx.stroke();
+        ctx.ellipse(0, -7.8, 2.6, 1.9, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Blue Hero Visor / Headband & Flowing Tails
-        ctx.fillStyle = "#2563EB";
+        // 3D Cyber-Blue Hero Headband & Flowing Tails
+        const bandGrad = ctx.createLinearGradient(0, -20, 0, -14);
+        bandGrad.addColorStop(0, "#60A5FA");
+        bandGrad.addColorStop(1, "#1D4ED8");
+        ctx.fillStyle = bandGrad;
         ctx.beginPath();
-        ctx.roundRect(-16.5, -19.5, 33, 5, 2);
+        ctx.roundRect(-17.2, -19.8, 34.4, 5.2, 2.5);
         ctx.fill(); ctx.stroke();
-        const ribbonWave = Math.sin(time * 12 + 1) * 3;
+        const ribbonWave = Math.sin(time * 12 + 1) * 3.5;
         ctx.beginPath();
-        ctx.moveTo(16, -17);
-        ctx.lineTo(24, -14 + ribbonWave);
-        ctx.lineTo(22, -19 + ribbonWave);
+        ctx.moveTo(16.5, -17);
+        ctx.lineTo(26, -13.5 + ribbonWave);
+        ctx.lineTo(23.5, -19.5 + ribbonWave);
         ctx.closePath();
         ctx.fill(); ctx.stroke();
 
-        // Front Arm & Fist Gauntlet
+        // Front Arm & 3D Battle Gauntlet
         ctx.save();
         ctx.translate(-10, 4.5);
         ctx.rotate(-armAngle);
-        ctx.fillStyle = "#F8FAFC";
+        ctx.fillStyle = "#F1F5F9";
         ctx.beginPath();
-        ctx.roundRect(-13, -3.2, 13, 6.8, 3.5);
+        ctx.roundRect(-13.5, -3.4, 13.5, 7, 3.5);
         ctx.fill(); ctx.stroke();
-        // Blue Battle Glove
-        ctx.fillStyle = "#3B82F6";
+
+        const gloveGrad = ctx.createRadialGradient(-14.5, -1.5, 1, -13.5, 0, 5.2);
+        gloveGrad.addColorStop(0, "#93C5FD");
+        gloveGrad.addColorStop(0.5, "#3B82F6");
+        gloveGrad.addColorStop(1, "#1E3A8A");
+        ctx.fillStyle = gloveGrad;
         ctx.beginPath();
-        ctx.arc(-13, 0, 4.2, 0, Math.PI * 2);
+        ctx.arc(-13.5, 0, 4.8, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
         ctx.restore();
       }
 
-      // Anime-Style Expressive Eyes & Mouth
+      // 3D Glossy Anime Eyes & Expressions
       ctx.strokeStyle = "#1E293B";
       ctx.fillStyle = "#1E293B";
       ctx.lineWidth = 2;
       if (state === 'squashed' || state === 'drowning') {
-        [-6.5, 6.5].forEach(ex => {
+        [-6.8, 6.8].forEach(ex => {
           ctx.beginPath();
-          ctx.moveTo(ex - 2.8, -13); ctx.lineTo(ex + 2.8, -7.5);
-          ctx.moveTo(ex + 2.8, -13); ctx.lineTo(ex - 2.8, -7.5);
+          ctx.moveTo(ex - 3, -13.5); ctx.lineTo(ex + 3, -7.5);
+          ctx.moveTo(ex + 3, -13.5); ctx.lineTo(ex - 3, -7.5);
           ctx.stroke();
         });
       } else {
-        // Large Hero Eyes with Dual Catchlights
-        [-6.5, 6.5].forEach(ex => {
-          ctx.fillStyle = "#1E293B";
+        [-6.8, 6.8].forEach(ex => {
+          // Outer Eye Iris
+          const eyeGrad = ctx.createLinearGradient(ex, -14, ex, -7);
+          eyeGrad.addColorStop(0, "#0F172A");
+          eyeGrad.addColorStop(1, type === 'bear' ? "#7C2D12" : "#1E3A8A");
+          ctx.fillStyle = eyeGrad;
           ctx.beginPath();
-          ctx.ellipse(ex, -10.5, 2.8, 3.4, 0, 0, Math.PI * 2);
+          ctx.ellipse(ex, -10.5, 3.2, 3.9, 0, 0, Math.PI * 2);
           ctx.fill();
+
+          // Primary & Secondary Specular Catchlights
           ctx.fillStyle = "#FFFFFF";
           ctx.beginPath();
-          ctx.arc(ex - 0.9, -11.6, 1.15, 0, Math.PI * 2);
-          ctx.arc(ex + 0.8, -9.4, 0.55, 0, Math.PI * 2);
+          ctx.arc(ex - 1.1, -12, 1.35, 0, Math.PI * 2);
+          ctx.arc(ex + 1, -9.2, 0.65, 0, Math.PI * 2);
           ctx.fill();
         });
 
-        // Determined Eyebrows when pulling/pushing
+        // Determined Eyebrows & 3D Water Sweat Drop
         if (state === 'pulling' || state === 'pushing') {
-          ctx.lineWidth = 2.2;
+          ctx.lineWidth = 2.4;
           ctx.beginPath();
-          ctx.moveTo(-9.5, -15.5); ctx.lineTo(-4, -14);
-          ctx.moveTo(9.5, -15.5); ctx.lineTo(4, -14);
+          ctx.moveTo(-10, -16); ctx.lineTo(-4.2, -14.2);
+          ctx.moveTo(10, -16); ctx.lineTo(4.2, -14.2);
           ctx.stroke();
 
-          // Effort Sweat Drop
-          ctx.fillStyle = "#38BDF8";
+          const sweatX = type === 'bear' ? -13.8 : 13.8;
+          const sweatY = -13 + Math.sin(time * 10) * 1.8;
+          const sweatGrad = ctx.createRadialGradient(sweatX - 0.8, sweatY - 0.8, 0.4, sweatX, sweatY, 2.6);
+          sweatGrad.addColorStop(0, "#FFFFFF");
+          sweatGrad.addColorStop(1, "#0284C7");
+          ctx.fillStyle = sweatGrad;
           ctx.beginPath();
-          ctx.arc(type === 'bear' ? -13 : 13, -13 + Math.sin(time * 10) * 1.5, 2, 0, Math.PI * 2);
+          ctx.arc(sweatX, sweatY, 2.4, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        // Rosy Cheeks
-        ctx.fillStyle = "rgba(244, 63, 94, 0.48)";
-        ctx.beginPath();
-        ctx.arc(-10, -6.5, 3.4, 0, Math.PI * 2);
-        ctx.arc(10, -6.5, 3.4, 0, Math.PI * 2);
-        ctx.fill();
+        // Soft Gradient Blush Cheeks
+        [-10.5, 10.5].forEach(cx => {
+          const blushGrad = ctx.createRadialGradient(cx, -6.5, 0.5, cx, -6.5, 4);
+          blushGrad.addColorStop(0, "rgba(244, 63, 94, 0.65)");
+          blushGrad.addColorStop(1, "rgba(244, 63, 94, 0)");
+          ctx.fillStyle = blushGrad;
+          ctx.beginPath();
+          ctx.arc(cx, -6.5, 4, 0, Math.PI * 2);
+          ctx.fill();
+        });
       }
 
       ctx.restore();
@@ -2914,9 +3029,9 @@
       if (state === 'squashed') {
         for (let s = 0; s < 3; s++) {
           const ang = time * 4.5 + (s * Math.PI * 2) / 3;
-          const sx = x + Math.cos(ang) * 24;
-          const sy = y - 22 + Math.sin(ang) * 6;
-          ctx.font = "16px sans-serif";
+          const sx = x + Math.cos(ang) * 26;
+          const sy = y - 24 + Math.sin(ang) * 6;
+          ctx.font = "18px sans-serif";
           ctx.fillText("⭐", sx, sy);
         }
       }
@@ -3141,84 +3256,182 @@
       ctx.arc(0, 0, boulderRadius, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = "#334155";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Expressive Face on Boulder
+      // Stone cracks & goofy boulder face
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-boulderRadius * 0.45, -boulderRadius * 0.25);
+      ctx.lineTo(-boulderRadius * 0.15, 0);
+      ctx.lineTo(-boulderRadius * 0.35, boulderRadius * 0.3);
+      ctx.stroke();
+
       ctx.fillStyle = "#1E293B";
       ctx.beginPath();
-      ctx.arc(-8, -5, 3.2, 0, Math.PI * 2);
-      ctx.arc(8, -5, 3.2, 0, Math.PI * 2);
+      ctx.arc(-8, -6, 3.2, 0, Math.PI * 2);
+      ctx.arc(8, -6, 3.2, 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.strokeStyle = "#1E293B";
-      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(0, 5, 6.5, 0, Math.PI);
+      ctx.arc(0, 6, 6, 0, Math.PI, false);
       ctx.stroke();
 
       ctx.restore();
     }
 
-    /* --- MODE 3: CAKE CANNON (奶油蛋糕大砲) --- */
+    /* --- MODE 3: CAKE CANNON (蛋糕大砲) --- */
     function renderCakeCannon(w, h) {
       const time = Date.now() * 0.002;
 
       drawParallaxBackdrop(w, h, 'cake');
 
-      // Festive Floor
-      const floorGrad = ctx.createLinearGradient(0, h * 0.76, 0, h);
-      floorGrad.addColorStop(0, "#FDBA74");
-      floorGrad.addColorStop(1, "#EA580C");
+      // Pink Party Floor
+      const floorGrad = ctx.createLinearGradient(0, h * 0.74, 0, h);
+      floorGrad.addColorStop(0, "#F9A8D4");
+      floorGrad.addColorStop(1, "#F472B6");
       ctx.fillStyle = floorGrad;
-      ctx.fillRect(0, h * 0.76, w, h * 0.24);
-
-      // Party Bunting Flags
-      const flagColors = ["#F43F5E", "#F59E0B", "#3B82F6", "#10B981"];
-      for (let x = 0, idx = 0; x < w; x += 28, idx++) {
-        ctx.fillStyle = flagColors[idx % flagColors.length];
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x + 14, 16);
-        ctx.lineTo(x + 28, 0);
-        ctx.fill();
-      }
-
-      const maxOffset = w * 0.34;
-      const ammoShift = -(smoothScore / gameState.maxScore) * maxOffset;
+      ctx.fillRect(0, h * 0.74, w, h * 0.26);
 
       const isRedWin = gameState.winnerSide === 'left' || smoothScore <= -gameState.maxScore;
       const isBlueWin = gameState.winnerSide === 'right' || smoothScore >= gameState.maxScore;
 
-      // LEFT BASE (RED)
+      const maxOffset = w * 0.32;
+      const ammoShift = -(smoothScore / gameState.maxScore) * maxOffset;
+
+      // LEFT TEAM (RED) & CANNON
       if (isBlueWin) {
-        ctx.font = "54px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("⛄", w * 0.16, h * 0.72);
-        ctx.font = "24px sans-serif";
-        ctx.fillText("🍒", w * 0.16, h * 0.34);
+        drawCharacter(ctx, 'bear', w * 0.16, h * 0.62, 'squashed', time);
+        ctx.font = "44px sans-serif";
+        ctx.fillText("🎂", w * 0.16 - 20, h * 0.68);
+        ctx.font = "28px sans-serif";
+        ctx.fillText("🍒", w * 0.16 - 10, h * 0.48);
       } else {
-        drawCharacter(ctx, 'bear', w * 0.14, h * 0.61, isRedWin ? 'celebrate' : 'idle', time);
+        drawCharacter(ctx, 'bear', w * 0.14, h * 0.59, isRedWin ? 'celebrate' : 'idle', time);
       }
 
-      // RIGHT BASE (BLUE)
+      // RIGHT TEAM (BLUE) & CANNON
       if (isRedWin) {
-        ctx.font = "54px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("⛄", w * 0.84, h * 0.72);
-        ctx.font = "24px sans-serif";
-        ctx.fillText("🍒", w * 0.84, h * 0.34);
+        drawCharacter(ctx, 'bunny', w * 0.84, h * 0.62, 'squashed', time);
+        ctx.font = "44px sans-serif";
+        ctx.fillText("🎂", w * 0.84 - 20, h * 0.68);
+        ctx.font = "28px sans-serif";
+        ctx.fillText("🍒", w * 0.84 - 10, h * 0.48);
       } else {
-        drawCharacter(ctx, 'bunny', w * 0.86, h * 0.61, isBlueWin ? 'celebrate' : 'idle', time);
+        drawCharacter(ctx, 'bunny', w * 0.86, h * 0.59, isBlueWin ? 'celebrate' : 'idle', time);
       }
 
-      // Parabolic Arc Cake Ammo with Frosting Trail
+      // Draw Brass Cannons on Left and Right
+      [
+        { x: w * 0.25, dir: 1 },
+        { x: w * 0.75, dir: -1 }
+      ].forEach(c => {
+        ctx.save();
+        ctx.translate(c.x, h * 0.68);
+        ctx.scale(c.dir, 1);
+        ctx.rotate(-0.32);
+
+        const barrelGrad = ctx.createLinearGradient(0, -14, 0, 14);
+        barrelGrad.addColorStop(0, "#FCD34D");
+        barrelGrad.addColorStop(0.5, "#D97706");
+        barrelGrad.addColorStop(1, "#78350F");
+        ctx.fillStyle = barrelGrad;
+        ctx.strokeStyle = "#1E293B";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-12, -12, 38, 24, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.rotate(0.32);
+        ctx.fillStyle = "#475569";
+        ctx.beginPath();
+        ctx.arc(0, 8, 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // Parabolic Arc Giant Bomb Cake Ammo with Burning Fuse & Cream Splatter
       if (!isRedWin && !isBlueWin) {
-        ctx.font = "36px sans-serif";
-        ctx.textAlign = "center";
         const cakeX = w / 2 + ammoShift;
-        const cakeArcY = (h * 0.5) - Math.sin(Math.abs(smoothScore / gameState.maxScore) * Math.PI) * 35;
-        ctx.fillText("🍰", cakeX, cakeArcY);
+        const progress = Math.abs(smoothScore / gameState.maxScore);
+        const cakeArcY = (h * 0.52) - Math.sin(progress * Math.PI) * (h * 0.28);
+        const cakeScale = 1.15 + progress * 0.55; // Gets dramatically bigger as it approaches target!
+        const wobble = Math.sin(time * 12) * 0.14;
+
+        ctx.save();
+        ctx.translate(cakeX, cakeArcY);
+        ctx.scale(cakeScale, cakeScale);
+        ctx.rotate(wobble);
+
+        // Glowing Danger Aura
+        const auraGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, 44);
+        auraGrad.addColorStop(0, "rgba(251, 113, 133, 0.55)");
+        auraGrad.addColorStop(1, "rgba(251, 113, 133, 0)");
+        ctx.fillStyle = auraGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, 44, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#1E293B";
+        ctx.lineWidth = 2;
+
+        // Bottom Tier (Giant Chocolate Sponge + Pink Drip Frosting)
+        ctx.fillStyle = "#78350F";
+        ctx.beginPath();
+        ctx.roundRect(-28, 4, 56, 18, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#F43F5E";
+        ctx.beginPath();
+        ctx.roundRect(-29, 2, 58, 9, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        // Middle Tier (Vanilla Cream + Rainbow Sprinkles)
+        ctx.fillStyle = "#FEF3C7";
+        ctx.beginPath();
+        ctx.roundRect(-20, -12, 40, 15, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.roundRect(-21, -14, 42, 7, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Top Giant Strawberry & Bomb Fuse!
+        ctx.fillStyle = "#E11D48";
+        ctx.beginPath();
+        ctx.arc(0, -21, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Bomb Fuse & Sparkling Fire
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, -29);
+        ctx.quadraticCurveTo(8, -38, 15, -35);
+        ctx.stroke();
+
+        // Animated Spark Flash
+        const sparkSize = 5 + Math.sin(time * 35) * 2.5;
+        ctx.fillStyle = "#FACC15";
+        ctx.beginPath();
+        ctx.arc(15, -35, sparkSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(15, -35, sparkSize * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
       }
     }
 
