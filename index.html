@@ -36,32 +36,44 @@
   </script>
 
   <style>
+    /* Multi-touch Classroom Smartboard Optimization */
+    html, body {
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
     /* Virtual Key Buttons Styling - 3D Candy Bevel */
     .key-btn {
-      transition: transform 0.06s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.06s ease, filter 0.1s ease;
+      touch-action: none;
+      transition: transform 0.05s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.05s ease, filter 0.08s ease;
       box-shadow: 0 3.5px 0 #CBD5E1, inset 0 1px 0 rgba(255,255,255,0.9);
       border: 1px solid #E2E8F0;
     }
     .key-btn:hover {
       filter: brightness(1.03);
     }
-    .key-btn:active {
+    .key-btn:active, .key-btn.is-pressed {
       transform: translateY(3px);
       box-shadow: 0 0.5px 0 #CBD5E1, inset 0 1px 2px rgba(0,0,0,0.1);
+      filter: brightness(0.95);
     }
 
     .key-btn-red-submit {
+      touch-action: none;
       box-shadow: 0 3.5px 0 #991B1B, inset 0 1.5px 0 rgba(255,255,255,0.45);
     }
-    .key-btn-red-submit:active {
+    .key-btn-red-submit:active, .key-btn-red-submit.is-pressed {
       transform: translateY(3px);
       box-shadow: 0 0.5px 0 #991B1B;
     }
 
     .key-btn-blue-submit {
+      touch-action: none;
       box-shadow: 0 3.5px 0 #1E40AF, inset 0 1.5px 0 rgba(255,255,255,0.45);
     }
-    .key-btn-blue-submit:active {
+    .key-btn-blue-submit:active, .key-btn-blue-submit.is-pressed {
       transform: translateY(3px);
       box-shadow: 0 0.5px 0 #1E40AF;
     }
@@ -1914,6 +1926,53 @@
       updateInputDisplays();
     }
 
+    function backspaceInput(side) {
+      playSfx('click');
+      if (side === 'left') {
+        gameState.leftInput = gameState.leftInput.slice(0, -1);
+      } else {
+        gameState.rightInput = gameState.rightInput.slice(0, -1);
+      }
+      updateInputDisplays();
+    }
+
+    /* Bind zero-latency independent multi-touch pointer events for smartboards */
+    function bindMultiTouchKey(btn, actionCallback, onLongPressCallback = null) {
+      let pressTimer = null;
+      let longPressed = false;
+
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        btn.classList.add('is-pressed');
+        longPressed = false;
+
+        if (onLongPressCallback) {
+          pressTimer = setTimeout(() => {
+            longPressed = true;
+            onLongPressCallback();
+          }, 450);
+        }
+      });
+
+      const releaseKey = (e) => {
+        if (pressTimer) {
+          clearTimeout(pressTimer);
+          pressTimer = null;
+        }
+        if (btn.classList.contains('is-pressed')) {
+          btn.classList.remove('is-pressed');
+          if (!longPressed && e.type === 'pointerup') {
+            actionCallback();
+          }
+        }
+      };
+
+      btn.addEventListener('pointerup', releaseKey);
+      btn.addEventListener('pointerleave', releaseKey);
+      btn.addEventListener('pointercancel', releaseKey);
+    }
+
     function updateInputDisplays() {
       const displayL = document.getElementById('input-display-left');
       const displayR = document.getElementById('input-display-right');
@@ -1929,32 +1988,48 @@
         if (!container) return;
         container.innerHTML = "";
 
-        letters.forEach(letter => {
-          const btn = document.createElement('button');
-          btn.type = "button";
-          btn.innerText = letter;
-          btn.className = "key-btn bg-white hover:bg-slate-50 text-slate-800 font-fredoka font-bold text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg select-none";
-          btn.onclick = () => handleLetterClick(side, letter);
-          container.appendChild(btn);
-        });
-
-        // Clear Button
+        // Create Backspace / Long-Press Clear Button
         const clearBtn = document.createElement('button');
         clearBtn.type = "button";
-        clearBtn.innerHTML = '<i class="fa-solid fa-delete-left"></i> 清除';
+        clearBtn.innerHTML = '<i class="fa-solid fa-delete-left"></i> 退格';
+        clearBtn.title = "點一下刪除一字；長按整排清空";
         clearBtn.className = "key-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[11px] sm:text-xs py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-0.5";
-        clearBtn.onclick = () => clearInput(side);
-        container.appendChild(clearBtn);
+        bindMultiTouchKey(clearBtn, () => backspaceInput(side), () => clearInput(side));
 
-        // Submit Button
+        // Create Submit Button
         const submitBtn = document.createElement('button');
         submitBtn.type = "button";
         submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 送出';
         submitBtn.className = side === 'left'
           ? "key-btn-red-submit bg-gradient-to-b from-red-500 to-red-600 text-white font-black text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-1"
           : "key-btn-blue-submit bg-gradient-to-b from-blue-500 to-blue-600 text-white font-black text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg col-span-1 flex items-center justify-center gap-1";
-        submitBtn.onclick = () => submitAnswer(side);
-        container.appendChild(submitBtn);
+        bindMultiTouchKey(submitBtn, () => submitAnswer(side));
+
+        if (side === 'left') {
+          // Left Player: Place Submit at the very first slot (far left edge) to prevent opponent interference
+          container.appendChild(submitBtn);
+          letters.forEach(letter => {
+            const btn = document.createElement('button');
+            btn.type = "button";
+            btn.innerText = letter;
+            btn.className = "key-btn bg-white hover:bg-slate-50 text-slate-800 font-fredoka font-bold text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg select-none";
+            bindMultiTouchKey(btn, () => handleLetterClick(side, letter));
+            container.appendChild(btn);
+          });
+          container.appendChild(clearBtn);
+        } else {
+          // Right Player: Keep Submit at the very last slot (far right edge)
+          letters.forEach(letter => {
+            const btn = document.createElement('button');
+            btn.type = "button";
+            btn.innerText = letter;
+            btn.className = "key-btn bg-white hover:bg-slate-50 text-slate-800 font-fredoka font-bold text-xs sm:text-sm py-1.5 sm:py-2 rounded-lg select-none";
+            bindMultiTouchKey(btn, () => handleLetterClick(side, letter));
+            container.appendChild(btn);
+          });
+          container.appendChild(clearBtn);
+          container.appendChild(submitBtn);
+        }
       });
     }
 
